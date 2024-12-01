@@ -1,5 +1,5 @@
 CFLAGS = -g -Wall -Wextra -pedantic
-OBJECTS := advent.o hashmap.o
+OBJECTS := advent.o hashmap.o realloc_arr.o
 
 all: $(OBJECTS)
 
