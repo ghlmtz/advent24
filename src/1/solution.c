@@ -1,10 +1,10 @@
 #include "advent.h"
 #include "realloc_arr.h"
 
-ReallocArr *num1;
-ReallocArr *num2;
+static ReallocArr *num1;
+static ReallocArr *num2;
 
-void parse_line(char *line)
+static void parse_line(char *line)
 {
     unsigned long *nums;
     scan_longs(line, &nums);
