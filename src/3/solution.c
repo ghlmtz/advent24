@@ -20,18 +20,12 @@ static void parse_line(char *line)
         b = 0;
         line = match + 4;
         while (isdigit(*line))
-        {
-            a = 10 * a + *line - '0';
-            line++;
-        }
+            a = 10 * a + *line++ - '0';
         if (*line != ',')
             continue;
         line++;
         while (isdigit(*line))
-        {
-            b = 10 * b + *line - '0';
-            line++;
-        }
+            b = 10 * b + *line++ - '0';
         if (*line != ')')
             continue;
         line++;
