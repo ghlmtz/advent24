@@ -93,6 +93,7 @@ int regex_match(const char *pattern, const char *str)
                         pattern++;
                         if (!scan_char(&str, '\r', get_count(&pattern)))
                             return 0;
+                        break;
                     case '\\':
                         pattern++;
                         if (!scan_char(&str, '\\', get_count(&pattern)))
