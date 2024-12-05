@@ -73,7 +73,7 @@ static char *gen_x(const char *s1, const char *s2, size_t length)
 static char **gen_xs(const char *base_string, size_t length)
 {
     size_t base_len = strlen(base_string);
-    char *reverse = calloc(sizeof(char), base_len);
+    char *reverse = calloc(sizeof(char), base_len + 1);
     char **strings = malloc(sizeof(char *) * 4);
     size_t i;
     for (i = 0; i < base_len; i++)

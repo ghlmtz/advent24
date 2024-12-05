@@ -56,10 +56,10 @@ void parse_line(char *line)
 {
     long *nums;
     static int line_idx = 0;
-    static struct rule rule = {.key = 0};
     if (strlen(line) < 2)
     {
         int index = -1;
+        struct rule rule = {.key = 0};
         phase = 1;
         sort_strings(lines, n_rules);
         for (size_t i = 0; i < n_rules; i++) {
@@ -90,7 +90,6 @@ void parse_line(char *line)
     else if (phase == 0)
     {
         lines[line_idx++] = line;
-        return;
     }
     else
     {
