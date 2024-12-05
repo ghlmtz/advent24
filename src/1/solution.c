@@ -6,40 +6,42 @@ static ReallocArr *num2;
 
 static void parse_line(char *line)
 {
-    unsigned long *nums;
+    long *nums;
     scan_longs(line, &nums);
-    realloc_arr_add(num1, (void *)nums[0]);
-    realloc_arr_add(num2, (void *)nums[1]);
+    realloc_arr_add(num1, nums);
+    realloc_arr_add(num2, nums + 1);
     free(nums);
 }
 
 int day1() 
 {
-    unsigned long diff = 0;
-    unsigned long similarity = 0;
-    num1 = realloc_arr_alloc(sizeof(long *));
-    num2 = realloc_arr_alloc(sizeof(long *));
+    long diff = 0;
+    long similarity = 0;
+    num1 = realloc_arr_alloc(sizeof(long));
+    num2 = realloc_arr_alloc(sizeof(long));
     READ_INPUT("input");
     for_each_line(parse_line);
-    sort_asc(num1->elements, num1->length);
-    sort_asc(num2->elements, num2->length);
+    long *nums1 = (long *)num1->elements;
+    long *nums2 = (long *)num2->elements;
+    sort_asc(nums1, num1->length);
+    sort_asc(nums2, num2->length);
     
     for (size_t i = 0; i < num1->length; i++)
     {
-        diff += abs(num1->elements[i] - num2->elements[i]);
+        diff += abs((int)nums1[i] - (int)nums2[i]);
         for (size_t j = 0; j < num2->length; j++)
         {
-            if (num2->elements[j] == num1->elements[i]) {
-                similarity += num1->elements[i];
+            if (nums2[j] == nums1[i]) {
+                similarity += nums1[i];
             }
-            else if (num2->elements[j] > num1->elements[i])
+            else if (nums2[j] > nums1[i])
                 break;
         }
     }
     printf("%ld\n", diff);
     printf("%ld\n", similarity);
-    realloc_arr_smallfree(num1);
-    realloc_arr_smallfree(num2);
+    realloc_arr_free(num1);
+    realloc_arr_free(num2);
 
     return 0;
 }

@@ -19,7 +19,7 @@ static int part2 = 0;
 int rule_comp(const void *p, const void *q)
 {
     struct rule *x = (struct rule *)p;
-    struct rule *y = *(struct rule **)q;
+    struct rule *y = (struct rule *)q;
 
     if (x->key < y->key)
         return -1;
@@ -32,10 +32,10 @@ int rule_comp(const void *p, const void *q)
 int rule_exists(long page, long after)
 {
     struct rule search = {.key = page};
-    struct rule **found = bsearch(&search, rules->elements, rules->length, rules->el_size, rule_comp);
+    struct rule *found = bsearch(&search, rules->elements, rules->length, rules->el_size, rule_comp);
     if (found == NULL)
         return 0;
-    if (bsearch_long(&after, (*found)->values, (*found)->n_values) != NULL)
+    if (bsearch_long(&after, found->values, found->n_values) != NULL)
         return 1;
     return 0;
 }
@@ -56,7 +56,7 @@ void parse_line(char *line)
 {
     long *nums;
     static int line_idx = 0;
-    static struct rule *rule = NULL;
+    static struct rule rule = {.key = 0};
     if (strlen(line) < 2)
     {
         int index = -1;
@@ -64,29 +64,28 @@ void parse_line(char *line)
         sort_strings(lines, n_rules);
         for (size_t i = 0; i < n_rules; i++) {
             scan_longs(lines[i], &nums);
-            if (rule == NULL || nums[0] != rule->key)
+            if (rule.key == 0 || nums[0] != rule.key)
             {
                 index++;
                 if (index != 0)
                 {
-                    rule->n_values = this_key->length;
-                    rule->values = malloc(sizeof(long) * rule->n_values);
-                    memcpy(rule->values, this_key->elements, rule->n_values * this_key->el_size);
-                    sort_asc(rule->values, rule->n_values);
-                    realloc_arr_add(rules, rule);
+                    rule.n_values = this_key->length;
+                    rule.values = malloc(sizeof(long) * rule.n_values);
+                    memcpy(rule.values, this_key->elements, rule.n_values * this_key->el_size);
+                    sort_asc(rule.values, rule.n_values);
+                    realloc_arr_add(rules, &rule);
                 }
-                rule = malloc(sizeof(struct rule));
-                rule->key = nums[0];
+                rule.key = nums[0];
                 this_key->length = 0;
             }
-            realloc_arr_add(this_key, (void *)nums[1]);
+            realloc_arr_add(this_key, nums + 1);
             free(nums);
         }
-        rule->n_values = this_key->length;
-        rule->values = malloc(sizeof(long) * rule->n_values);
-        memcpy(rule->values, this_key->elements, rule->n_values * this_key->el_size);
-        sort_asc(rule->values, rule->n_values);
-        realloc_arr_add(rules, rule);
+        rule.n_values = this_key->length;
+        rule.values = malloc(sizeof(long) * rule.n_values);
+        memcpy(rule.values, this_key->elements, rule.n_values * this_key->el_size);
+        sort_asc(rule.values, rule.n_values);
+        realloc_arr_add(rules, &rule);
     }
     else if (phase == 0)
     {
@@ -127,19 +126,18 @@ int day5()
     n_rules = count_to_blank(0) - 1;
     lines = malloc(sizeof(char *) * n_rules);
 
-    rules = realloc_arr_alloc(sizeof(struct rule *));
-    this_key = realloc_arr_alloc(sizeof(unsigned long));
+    rules = realloc_arr_alloc(sizeof(struct rule));
+    this_key = realloc_arr_alloc(sizeof(long));
 
     for_each_line(parse_line);
 
     printf("%d\n", part1);
     printf("%d\n", part2);
 
-    realloc_arr_smallfree(this_key);
+    realloc_arr_free(this_key);
     for (size_t i = 0; i < rules->length; i++)
     {
-        struct rule *r = (struct rule *)rules->elements[i];
-        free(r->values);
+        free(((struct rule *)rules->elements)[i].values);
     }
     realloc_arr_free(rules);
     free(lines);

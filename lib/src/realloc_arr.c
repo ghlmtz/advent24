@@ -1,4 +1,5 @@
 /* Support for storing dynamically resizing arrays of pointers to objs */
+#include <string.h>
 
 #include "realloc_arr.h"
 
@@ -14,7 +15,7 @@ ReallocArr *realloc_arr_alloc(size_t el_size)
 
 void realloc_arr_add(ReallocArr *data, void *el)
 {
-    data->elements[data->length++] = (intptr_t)el; 
+    memcpy((void *)((intptr_t)data->elements + data->length++ * data->el_size), el, data->el_size);
     if (data->length == data->capacity)
     { 
         data->elements = realloc(data->elements, data->el_size * data->capacity * 2); \
@@ -22,15 +23,7 @@ void realloc_arr_add(ReallocArr *data, void *el)
     }
 }
 
-void realloc_arr_free(ReallocArr *data)
-{
-    for (size_t i = 0; i < data->length; i++) {
-        free((void *)data->elements[i]);
-    }
-    realloc_arr_smallfree(data);
-}
-
-void realloc_arr_smallfree(ReallocArr *data) 
+void realloc_arr_free(ReallocArr *data) 
 {
     free(data->elements);
     free(data);

@@ -7,7 +7,7 @@
 typedef struct {
     size_t length; 
     size_t capacity;
-    intptr_t *elements; 
+    void *elements; 
     size_t el_size;
 } ReallocArr;
 
@@ -17,10 +17,7 @@ ReallocArr *realloc_arr_alloc(size_t el_size);
 
 void realloc_arr_add(ReallocArr *data, void *el);
 
-/* Frees the data structure, element array, and individual elements. */
+/* Frees the data structure and element array */
 void realloc_arr_free(ReallocArr *data);
-
-/* Frees the data structure and element array. Skips the individual elements. */
-void realloc_arr_smallfree(ReallocArr *data);
 
 #endif
