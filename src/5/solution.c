@@ -24,29 +24,16 @@ int rule_exists(int page, int after)
     return 0;
 }
 
-void rule_breaker(int *nums, int n)
+int comparitor(const void *p, const void *q)
 {
-    int mid = 0;
-    while (mid == 0) {
-        mid = nums[(n-1)/2];
-        for (int i = n - 1; i > 0; i--)
-        {
-            for (int j = 0; j < i; j++)
-            {
-                if (rule_exists(nums[i], nums[j]))
-                {
-                    int tmp = nums[i];
-                    nums[i] = nums[j];
-                    nums[j] = tmp;
-                    mid = 0;
-                    break;
-                }
-            }
-            if (mid == 0)
-                break;
-        }
-    }
-    part2 += mid;
+    int x = *(const int *)p;
+    int y = *(const int *)q;
+
+    if (rule_exists(x, y))
+        return 1;
+    else if (rule_exists(y, x))
+        return -1;
+    return 0;
 }
 
 void parse_line(char *line)
@@ -90,9 +77,12 @@ void parse_line(char *line)
             if (mid == 0)
                 break;
         }
-        if (mid == 0)
-            rule_breaker(nums, n);
         part1 += mid;
+        if (mid == 0)
+        {
+            qsort(nums, n, sizeof(int), comparitor);
+            part2 += nums[(n-1)/2];
+        }
     }
     free(nums);
 }
