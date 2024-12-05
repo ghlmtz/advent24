@@ -246,11 +246,11 @@ int scan_ints_neg(char *line, int **nums)
 
 /* Pulls out all the integers and returns how many it found.
  * NOTE: ignores minus sign! */
-unsigned long scan_longs(char *line, unsigned long **nums)
+long scan_longs(char *line, long **nums)
 {
-    unsigned long i;
+    long i;
 
-    *nums = malloc(sizeof(unsigned long) * SCAN_INTS_MAX);
+    *nums = malloc(sizeof(long) * SCAN_INTS_MAX);
 
     for (i = 0; i < SCAN_INTS_MAX; i++)
     {
@@ -258,7 +258,7 @@ unsigned long scan_longs(char *line, unsigned long **nums)
             line++;
         if (*line == '\0')
             break;
-        sscanf(line, "%lu", *nums + i);
+        sscanf(line, "%ld", *nums + i);
         while (isdigit(*line))
             line++;
     }

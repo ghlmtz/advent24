@@ -22,7 +22,7 @@ size_t char_index(const char *s, char ch);
 size_t char_count(const char *s, char ch);
 int scan_ints(char *line, int **nums);
 int scan_ints_neg(char *line, int **nums);
-unsigned long scan_longs(char *line, unsigned long **nums);
+long scan_longs(char *line, long **nums);
 int manhattan(XY_POS *z, XY_POS *w);
 int xy_pos_eq(void *z, void *w);
 
