@@ -1,1 +1,0 @@
-tr '\n' ' ' <input | perl -pe "s/(.*?)don't\(\).*?do\(\)/\1/g; s/don't\(\).*$//" | grep -o 'mul([0-9]\+,[0-9]\+)' | sed -e 's/,/*/' -e 's/mul//' | paste -sd '+' | bc
