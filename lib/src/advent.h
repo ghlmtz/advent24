@@ -24,6 +24,8 @@ int scan_ints(char *line, int **nums);
 int scan_ints_neg(char *line, int **nums);
 long scan_longs(char *line, long **nums);
 int manhattan(XY_POS *z, XY_POS *w);
+unsigned xy_pos_hash(void *p);
 int xy_pos_eq(void *z, void *w);
+XY_POS *xy_pos_add(XY_POS *dest, const XY_POS *src);
 
 #define READ_INPUT(x) if(read_input(x) == NULL) return 1

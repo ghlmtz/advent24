@@ -4,6 +4,7 @@
         "socket.h": "c",
         "netdb.h": "c",
         "advent.h": "c",
-        "realloc_arr.h": "c"
+        "realloc_arr.h": "c",
+        "hashmap.h": "c"
     }
 }
