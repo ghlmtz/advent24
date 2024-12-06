@@ -14,6 +14,8 @@ typedef struct hash_map
     struct hash_ptr *storage[HASH_SIZE];
 } HashMap;
 
+void hash_dummy_free(void *);
+
 HashMap *hash_init(unsigned (*hash_func)(void *),
                    int (*equal_func)(void *, void *), void (*free_func)(void *));
 void *hash_exists(HashMap *hash_map, void *element);

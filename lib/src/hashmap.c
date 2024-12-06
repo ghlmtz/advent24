@@ -2,6 +2,9 @@
 
 #include "hashmap.h"
 
+/* For structs that don't need to be freed */
+void hash_dummy_free(void *p) { ; }
+
 void *hash_exists(HashMap *hash_map, void *element) {
     unsigned key = hash_map->hash_func(element);
 

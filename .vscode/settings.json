@@ -6,6 +6,7 @@
         "advent.h": "c",
         "realloc_arr.h": "c",
         "hashmap.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "input": "plaintext"
     }
 }
