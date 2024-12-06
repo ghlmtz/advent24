@@ -1,23 +1,19 @@
 #include "advent.h"
 #include "hashmap.h"
 #include "realloc_arr.h"
+#include "xy_pos.h"
 
-ReallocArr *walls;
-XY_POS guard;
-const XY_POS dirs[4] = {{.x=0, .y=-1}, {.x=1, .y=0}, {.x=0, .y=1}, {.x=-1, .y=0} };
-int dir = 0;
+extern XY_POS xy_dirs[];
+
+static ReallocArr *walls;
+static XY_POS guard;
+static int dir = 0;
 static int max_x = 0;
 static int max_y = 0;
 
 static int is_wall(XY_POS *xy)
 {
-    XY_POS *xy_walls = (XY_POS *)walls->elements;
-    for (size_t i = 0; i < walls->length; i++)
-    {
-        if (xy_pos_eq(xy_walls + i, xy))
-            return 1;
-    }
-    return 0;
+    return NULL != bsearch(xy, walls->elements, walls->length, sizeof(XY_POS), xy_pos_comp);
 }
 
 static void parse_line(char *line)
@@ -52,10 +48,10 @@ void guard_walk(HashMap *hash_map)
             hash_add(hash_map, z);
         else
             free(z);
-        xy_pos_add(&guard, dirs + dir);
+        xy_pos_add(&guard, xy_dirs + dir);
         if (is_wall(&guard))
         {
-            xy_pos_add(&guard, dirs + ((dir + 2) % 4));
+            xy_pos_add(&guard, xy_dirs + ((dir + 2) % 4));
             dir = (dir + 1) % 4;
         }
     }

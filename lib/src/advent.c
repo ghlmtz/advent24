@@ -272,30 +272,3 @@ long scan_longs(char *line, long **nums)
 
     return i;
 }
-
-/* Grid stuff */
-
-int manhattan(XY_POS *z, XY_POS *w)
-{
-    return abs(z->x - w->x) + abs(z->y - w->y);
-}
-
-unsigned xy_pos_hash(void *p) 
-{
-    XY_POS *z = (XY_POS *)p;
-    return (HASH_SIZE + (z->x * 57 + z->y * 31) % HASH_SIZE) % HASH_SIZE;
-}
-
-int xy_pos_eq(void *p, void *q)
-{
-    XY_POS *z = (XY_POS *)p;
-    XY_POS *w = (XY_POS *)q;
-    return z->x == w->x && z->y == w->y;
-}
-
-XY_POS *xy_pos_add(XY_POS *dest, const XY_POS *src)
-{
-    dest->x += src->x;
-    dest->y += src->y;
-    return dest;
-}
