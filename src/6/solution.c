@@ -21,7 +21,6 @@ int xy_pos_dir_eq(void *p, void *q)
 static HashMap *walls;
 static HashMap *tried;
 static XY_POS start;
-static int dir = 0;
 static int max_x = 0;
 static int max_y = 0;
 
@@ -51,9 +50,9 @@ int within_bounds(XY_POS *guard)
     return guard->x >= 0 && guard->x < max_x && guard->y >= 0 && guard->y < max_y;
 }
 
-static int test_loop(XY_POS_DIR *pos)
+static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
 {
-    XY_POS_DIR guard_dir = {.x=start.x, .y=start.y, .dir=0};
+    XY_POS_DIR guard_dir = {.x=s->x, .y=s->y, .dir=s->dir};
     XY_POS *guard = (XY_POS *)&guard_dir;
     HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
     while(within_bounds(guard))
@@ -87,40 +86,42 @@ static int test_loop(XY_POS_DIR *pos)
 
 void guard_walk(HashMap *hash_map)
 {
+    int part1 = 1;
     int part2 = 0;
-    XY_POS guard = {.x=start.x, .y=start.y};
+    XY_POS_DIR guard = {.x=start.x, .y=start.y, .dir=0};
+    XY_POS *pos = (XY_POS *)&guard;
+    XY_POS_DIR prev = {.x=start.x, .y=start.y, .dir=0};
     while(guard.x >= 0 && guard.x < max_x && guard.y >= 0 && guard.y < max_y)
     {
         XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
         XY_POS *z = (XY_POS *)w;
         z->x = guard.x;
         z->y = guard.y;
-        w->dir = dir;
+        w->dir = guard.dir;
 
         hash_add(hash_map, z);
 
-        xy_pos_add(&guard, xy_dirs + dir);
+        xy_pos_add(pos, xy_dirs + guard.dir);
         if (hash_exists(walls, &guard))
         {
-            xy_pos_add(&guard, xy_dirs + ((dir + 2) % 4));
-            dir = (dir + 1) % 4;
-            w->dir = dir;
+            xy_pos_add(pos, xy_dirs + ((guard.dir + 2) % 4));
+            guard.dir = (guard.dir + 1) % 4;
         }
-        if (!(guard.x == start.x && guard.y == start.y && dir == 0) && !hash_exists(tried, z))
+        if (!hash_exists(tried, z))
         {
             hash_add(tried, z);
-            part2 += test_loop(w);
+            part2 += test_loop(w, &prev);
         }
         else
         {
             free(w);
         }
+        memcpy(&prev, &guard, sizeof(XY_POS_DIR));
     }
-    int count = 1;
     hash_iterate(hash_map);
     while(hash_iterate(NULL) != NULL)
-        count++;
-    printf("%d\n", count);
+        part1++;
+    printf("%d\n", part1);
     printf("%d\n", part2);
 }
 
