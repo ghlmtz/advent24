@@ -18,29 +18,24 @@ int xy_pos_dir_eq(void *p, void *q)
     return z->x == w->x && z->y == w->y && z->dir == w->dir;
 }
 
-static ReallocArr *walls;
+static HashMap *walls;
 static HashMap *tried;
 static XY_POS start;
 static int dir = 0;
 static int max_x = 0;
 static int max_y = 0;
 
-static int is_wall(XY_POS *xy)
-{
-    return NULL != bsearch(xy, walls->elements, walls->length, sizeof(XY_POS), xy_pos_comp);
-}
-
 static void parse_line(char *line)
 {
-    XY_POS pos;
     max_x = strlen(line);
     for(size_t x = 0; x < strlen(line); x++) 
     {
         if (line[x] == '#')
         {
-            pos.x = x;
-            pos.y = max_y;
-            realloc_arr_add(walls, &pos);
+            XY_POS *pos = malloc(sizeof(XY_POS));
+            pos->x = x;
+            pos->y = max_y;
+            hash_add(walls, pos);
         }
         else if (line[x] == '^')
         {
@@ -51,12 +46,17 @@ static void parse_line(char *line)
     max_y++;
 }
 
+int within_bounds(XY_POS *guard)
+{
+    return guard->x >= 0 && guard->x < max_x && guard->y >= 0 && guard->y < max_y;
+}
+
 static int test_loop(XY_POS_DIR *pos)
 {
     XY_POS_DIR guard_dir = {.x=start.x, .y=start.y, .dir=0};
     XY_POS *guard = (XY_POS *)&guard_dir;
     HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
-    while(guard->x >= 0 && guard->x < max_x && guard->y >= 0 && guard->y < max_y)
+    while(within_bounds(guard))
     {
         XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
         w->x = guard_dir.x;
@@ -64,12 +64,17 @@ static int test_loop(XY_POS_DIR *pos)
         w->dir = guard_dir.dir;
         hash_add(hash_dir, w);
 
-        xy_pos_add(guard, xy_dirs + guard_dir.dir);
-        if (xy_pos_eq(pos, guard) || is_wall(guard))
+        while (within_bounds(guard) && !(xy_pos_eq(pos, guard) || hash_exists(walls, guard)))
+            xy_pos_add(guard, xy_dirs + guard_dir.dir);
+        if (!within_bounds(guard))
         {
-            xy_pos_add(guard, xy_dirs + ((guard_dir.dir + 2) % 4));
-            guard_dir.dir = (guard_dir.dir + 1) % 4;
+            hash_free(hash_dir);
+            return 0;
         }
+        
+        xy_pos_add(guard, xy_dirs + ((guard_dir.dir + 2) % 4));
+        guard_dir.dir = (guard_dir.dir + 1) % 4;
+
         if (hash_exists(hash_dir, guard))
         {
             hash_free(hash_dir);
@@ -95,7 +100,7 @@ void guard_walk(HashMap *hash_map)
         hash_add(hash_map, z);
 
         xy_pos_add(&guard, xy_dirs + dir);
-        if (is_wall(&guard))
+        if (hash_exists(walls, &guard))
         {
             xy_pos_add(&guard, xy_dirs + ((dir + 2) % 4));
             dir = (dir + 1) % 4;
@@ -123,13 +128,13 @@ int day6()
 {
     HashMap *hash_map = hash_init(xy_pos_hash, xy_pos_eq, hash_dummy_free);
     tried = hash_init(xy_pos_hash, xy_pos_eq, free);
-    walls = realloc_arr_alloc(sizeof(XY_POS));
+    walls = hash_init(xy_pos_hash, xy_pos_eq, free);
     READ_INPUT("input");
     for_each_line(parse_line);
     guard_walk(hash_map);
 
     hash_free(hash_map);
     hash_free(tried);
-    realloc_arr_free(walls);
+    hash_free(walls);
     return 0;
 }
