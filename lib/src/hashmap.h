@@ -1,3 +1,6 @@
+#ifndef HASHMAP_H
+#define HASHMAP_H
+
 #define HASH_SIZE 4096
 
 struct hash_ptr
@@ -22,4 +25,7 @@ void *hash_exists(HashMap *hash_map, void *element);
 int hash_add(HashMap *hash_map, void *element);
 void *hash_del(HashMap *hash_map, void *element);
 void hash_free(HashMap *hash_map);
+void hash_flush(HashMap *hash_map);
 void *hash_iterate(HashMap *hash_map);
+
+#endif

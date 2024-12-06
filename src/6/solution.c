@@ -46,16 +46,15 @@ static void parse_line(char *line)
     max_y++;
 }
 
-int within_bounds(XY_POS *guard)
+static int within_bounds(XY_POS *guard)
 {
     return guard->x >= 0 && guard->x < max_x && guard->y >= 0 && guard->y < max_y;
 }
 
-static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
+static int test_loop(HashMap *hash_dir, XY_POS_DIR *pos, XY_POS_DIR *s)
 {
     XY_POS_DIR guard_dir = {.x=s->x, .y=s->y, .dir=s->dir};
     XY_POS *guard = (XY_POS *)&guard_dir;
-    HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
 
     while(within_bounds(guard))
     {
@@ -73,7 +72,6 @@ static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
                 xy_pos_add(guard, xy_dirs + guard_dir.dir);
                 if (!within_bounds(guard))
                 {
-                    hash_free(hash_dir);
                     return 0;
                 }
             }
@@ -85,7 +83,6 @@ static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
             int *path = &(paths[guard_dir.dir][max_y * guard->x + guard->y]);
             if (dist < 0)
             {
-                hash_free(hash_dir);
                 return 0;
             }
             if (dist > 0)
@@ -102,7 +99,6 @@ static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
                     i++;
                     if (!within_bounds(guard))
                     {
-                        hash_free(hash_dir);
                         *path = -1;
                         return 0;
                     }
@@ -116,21 +112,20 @@ static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
 
         if (hash_exists(hash_dir, guard))
         {
-            hash_free(hash_dir);
             return 1;
         }
     }
-    hash_free(hash_dir);
     return 0;
 }
 
-void guard_walk(HashMap *hash_map)
+static void guard_walk(HashMap *hash_map)
 {
     int part1 = 1;
     int part2 = 0;
     XY_POS_DIR guard = {.x=start.x, .y=start.y, .dir=0};
     XY_POS *pos = (XY_POS *)&guard;
     XY_POS_DIR prev = {.x=start.x, .y=start.y, .dir=0};
+    HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
     while(guard.x >= 0 && guard.x < max_x && guard.y >= 0 && guard.y < max_y)
     {
         XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
@@ -150,7 +145,8 @@ void guard_walk(HashMap *hash_map)
         if (!hash_exists(tried, z))
         {
             hash_add(tried, z);
-            part2 += test_loop(w, &prev);
+            part2 += test_loop(hash_dir, w, &prev);
+            hash_flush(hash_dir);
         }
         else
         {
@@ -163,6 +159,7 @@ void guard_walk(HashMap *hash_map)
         part1++;
     printf("%d\n", part1);
     printf("%d\n", part2);
+    free(hash_dir);
 }
 
 int day6()

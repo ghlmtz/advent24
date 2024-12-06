@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "hashmap.h"
 
@@ -25,11 +26,9 @@ HashMap *hash_init(unsigned (*hash_func)(void *),
                    void (*free_func)(void *))
 {
     HashMap *hash_map = malloc(sizeof(HashMap));
-    int i;
 
-    for (i = 0; i < HASH_SIZE; i++) {
-        hash_map->storage[i] = NULL;
-    }
+    memset(hash_map->storage, 0, HASH_SIZE * sizeof(struct hash_ptr *));
+
     hash_map->hash_func = hash_func;
     hash_map->equal_func = equal_func;
     hash_map->free_func = free_func;
@@ -98,6 +97,23 @@ void hash_free(HashMap *hash_map) {
     }
     
     free(hash_map);
+}
+
+void hash_flush(HashMap *hash_map) {
+    int i;
+    for (i = 0; i < HASH_SIZE; i++) {
+        struct hash_ptr *head = hash_map->storage[i];
+        struct hash_ptr *next;
+
+        while (head != NULL) {
+            next = head->next;
+            hash_map->free_func(head->data);
+            free(head);
+            head = next;
+        }
+    }
+    
+    memset(hash_map->storage, 0, HASH_SIZE * sizeof(struct hash_ptr *));
 }
 
 HashMap *hash_iterate_map;
