@@ -24,13 +24,6 @@ int xy_pos_eq(void *p, void *q)
     return z->x == w->x && z->y == w->y;
 }
 
-XY_POS *xy_pos_add(XY_POS *dest, const XY_POS *src)
-{
-    dest->x += src->x;
-    dest->y += src->y;
-    return dest;
-}
-
 /* For sorting / searching XY_POS objects */
 int xy_pos_comp(const void *p, const void *q)
 {

@@ -23,6 +23,7 @@ static HashMap *tried;
 static XY_POS start;
 static int max_x = 0;
 static int max_y = 0;
+static int **paths;
 
 static void parse_line(char *line)
 {
@@ -55,6 +56,7 @@ static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
     XY_POS_DIR guard_dir = {.x=s->x, .y=s->y, .dir=s->dir};
     XY_POS *guard = (XY_POS *)&guard_dir;
     HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
+
     while(within_bounds(guard))
     {
         XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
@@ -63,12 +65,50 @@ static int test_loop(XY_POS_DIR *pos, XY_POS_DIR *s)
         w->dir = guard_dir.dir;
         hash_add(hash_dir, w);
 
-        while (within_bounds(guard) && !(xy_pos_eq(pos, guard) || hash_exists(walls, guard)))
-            xy_pos_add(guard, xy_dirs + guard_dir.dir);
-        if (!within_bounds(guard))
+        if ((pos->y == guard->y && (guard_dir.dir == 1 || guard_dir.dir == 3))
+         || (pos->x == guard->x && (guard_dir.dir == 0 || guard_dir.dir == 2)))  
         {
-            hash_free(hash_dir);
-            return 0;
+            while (!(xy_pos_eq(pos, guard) || hash_exists(walls, guard)))
+            {
+                xy_pos_add(guard, xy_dirs + guard_dir.dir);
+                if (!within_bounds(guard))
+                {
+                    hash_free(hash_dir);
+                    return 0;
+                }
+            }
+        }
+        else
+        {
+            int i = 0;
+            int dist = paths[guard_dir.dir][max_y * guard->x + guard->y];
+            int *path = &(paths[guard_dir.dir][max_y * guard->x + guard->y]);
+            if (dist < 0)
+            {
+                hash_free(hash_dir);
+                return 0;
+            }
+            if (dist > 0)
+            {
+                guard->x += xy_dirs[guard_dir.dir].x * dist;
+                guard->y += xy_dirs[guard_dir.dir].y * dist;
+            }
+            else
+            {
+                i = 0;
+                while (!hash_exists(walls, guard))
+                {
+                    xy_pos_add(guard, xy_dirs + guard_dir.dir);
+                    i++;
+                    if (!within_bounds(guard))
+                    {
+                        hash_free(hash_dir);
+                        *path = -1;
+                        return 0;
+                    }
+                }  
+                *path = i;
+            }
         }
         
         xy_pos_add(guard, xy_dirs + ((guard_dir.dir + 2) % 4));
@@ -132,10 +172,23 @@ int day6()
     walls = hash_init(xy_pos_hash, xy_pos_eq, free);
     READ_INPUT("input");
     for_each_line(parse_line);
+
+    paths = malloc(sizeof(int *) * 4);
+    for (int i = 0; i < 4; i++)
+    {
+        paths[i] = calloc(max_x * max_y, sizeof(int));
+    }
+
     guard_walk(hash_map);
 
     hash_free(hash_map);
     hash_free(tried);
     hash_free(walls);
+    for (int i = 0; i < 4; i++)
+    {
+        free(paths[i]);
+    }
+    free(paths);
+
     return 0;
 }

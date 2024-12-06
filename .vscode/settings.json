@@ -7,6 +7,7 @@
         "realloc_arr.h": "c",
         "hashmap.h": "c",
         "string.h": "c",
-        "input": "plaintext"
+        "input": "plaintext",
+        "xy_pos.h": "c"
     }
 }
