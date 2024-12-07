@@ -18,6 +18,6 @@ size_t char_index(const char *s, char ch);
 size_t char_count(const char *s, char ch);
 int scan_ints(char *line, int **nums);
 int scan_ints_neg(char *line, int **nums);
-long scan_longs(char *line, long **nums);
+int scan_longs(char *line, long **nums);
 
 #define READ_INPUT(x) if(read_input(x) == NULL) return 1

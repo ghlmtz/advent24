@@ -247,9 +247,9 @@ int scan_ints_neg(char *line, int **nums)
 
 /* Pulls out all the integers and returns how many it found.
  * NOTE: ignores minus sign! */
-long scan_longs(char *line, long **nums)
+int scan_longs(char *line, long **nums)
 {
-    long i;
+    int i;
 
     *nums = malloc(sizeof(long) * SCAN_INTS_MAX);
 
