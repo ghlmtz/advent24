@@ -38,7 +38,6 @@ static void solve()
     HashMap *seen2 = hash_init(xy_pos_hash, xy_pos_eq, free);
     XY_POS diff;
     XY_POS scratch;
-    int pt1 = 1, pt2 = 1;
     for (int i = 0; i < 62; i++)
     {
         for (int a = 0; a < n_antennae[i]; a++)
@@ -90,14 +89,8 @@ static void solve()
             }
         }
     }
-    hash_iterate(seen1);
-    while(hash_iterate(NULL) != NULL)
-        pt1++;
-    printf("%d\n", pt1);
-    hash_iterate(seen2);
-    while(hash_iterate(NULL) != NULL)
-        pt2++;
-    printf("%d\n", pt2);
+    printf("%ld\n", hash_length(seen1));
+    printf("%ld\n", hash_length(seen2));
     hash_free(seen1);
     hash_free(seen2);
 }

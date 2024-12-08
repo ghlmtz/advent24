@@ -145,3 +145,19 @@ void *hash_iterate(HashMap *hash_map) {
 
     return return_ptr;
 }
+
+/* Returns total number of data members in hash */
+size_t hash_length(HashMap *hash_map)
+{
+    size_t count = 0;
+    for (int i = 0; i < HASH_SIZE; i++)
+    {
+        struct hash_ptr *head = hash_map->storage[i];
+        while (head != NULL)
+        {
+            count++;
+            head = head->next;
+        }
+    }
+    return count;
+}

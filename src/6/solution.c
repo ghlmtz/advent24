@@ -120,7 +120,6 @@ static int test_loop(HashMap *hash_dir, XY_POS_DIR *pos, XY_POS_DIR *s)
 
 static void guard_walk(HashMap *hash_map)
 {
-    int part1 = 1;
     int part2 = 0;
     XY_POS_DIR guard = {.x=start.x, .y=start.y, .dir=0};
     XY_POS *pos = (XY_POS *)&guard;
@@ -154,10 +153,7 @@ static void guard_walk(HashMap *hash_map)
         }
         memcpy(&prev, &guard, sizeof(XY_POS_DIR));
     }
-    hash_iterate(hash_map);
-    while(hash_iterate(NULL) != NULL)
-        part1++;
-    printf("%d\n", part1);
+    printf("%ld\n", hash_length(hash_map));
     printf("%d\n", part2);
     free(hash_dir);
 }
