@@ -13,10 +13,6 @@ static long part2 = 0;
 static int search(MemoryBlock *head, MemoryBlock *end, int dec_id)
 {
     MemoryBlock *prev = NULL;
-    if (end->idx != dec_id)
-    {
-        return dec_id;
-    }
     while (head->idx > -1 || head->len < end->len)
     {
         prev = head;
@@ -85,14 +81,15 @@ static void parse_line2(char *line)
     while (end != NULL && dec_id > 0)
     {
         dec_id = search(head, end, dec_id);
-        while (head->next->idx != -1) {
+        while (head->next->idx != -1 || head->next->len == 0) {
             if (head->idx == inc_id)
                 inc_id++;
             head = head->next;
         }
-        end = end->prev;
         if (dec_id <= inc_id)
             break;
+        while(end->idx != dec_id)
+            end = end->prev;
     }
     count = 0;
     while (start != NULL)
