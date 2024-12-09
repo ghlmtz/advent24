@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
+#include <time.h>
 #include <sysexits.h>
 #include <unistd.h>
 
@@ -82,6 +83,14 @@ int main(int argc, char *argv[])
             run_day(all_days[i]);
         }
     } 
+    else if (strcmp("-d", argv[1]) == 0) // Run today's 
+    {
+        char day[3];
+        struct tm *ts;
+        time_t now = time(NULL);
+        ts = localtime(&now);
+        run_day(all_days[ts->tm_mday - 1]);
+    }
     else 
     {
         for (int i = 1; i < argc; i++) 
