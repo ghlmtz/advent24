@@ -10,6 +10,42 @@ typedef struct mem_block {
 static long part1 = 0;
 static long part2 = 0;
 
+static int search(MemoryBlock *head, MemoryBlock *end, int dec_id)
+{
+    MemoryBlock *prev = NULL;
+    if (end->idx != dec_id)
+    {
+        return dec_id;
+    }
+    while (head->idx > -1 || head->len < end->len)
+    {
+        prev = head;
+        head = head->next;
+        if (head == NULL || head == end) 
+        {
+            return dec_id - 1;
+        }
+    }
+    if (head->len == end->len)
+    {
+        head->idx = end->idx;
+        end->idx = -1;
+    }
+    else
+    {
+        MemoryBlock *new_blk = malloc(sizeof(MemoryBlock));
+        new_blk->idx = end->idx;
+        new_blk->len = end->len;
+        if (prev != NULL)
+            prev->next = new_blk;
+        new_blk->prev = prev;
+        new_blk->next = head;
+        head->len = head->len - end->len;
+        end->idx = -1;
+    }
+    return dec_id - 1;
+}
+
 static void parse_line2(char *line)
 {
     MemoryBlock *head = NULL;
@@ -19,19 +55,22 @@ static void parse_line2(char *line)
     int count = 0;
     while (line[line_idx] != '\0') 
     {
-        MemoryBlock *blk = malloc(sizeof(MemoryBlock));
-        blk->idx = count % 2 == 0 ? idx : -1;
-        blk->len = line[line_idx] - '0';
-        blk->next = NULL;
-        if (head == NULL) {
-            head = blk;
-            blk->prev = NULL;
-            tail = blk;
-        }
-        else {
-            tail->next = blk;
-            blk->prev = tail;
-            tail = blk;
+        if (line[line_idx] != 0)
+        {
+            MemoryBlock *blk = malloc(sizeof(MemoryBlock));
+            blk->idx = count % 2 == 0 ? idx : -1;
+            blk->len = line[line_idx] - '0';
+            blk->next = NULL;
+            if (head == NULL) {
+                head = blk;
+                blk->prev = NULL;
+                tail = blk;
+            }
+            else {
+                tail->next = blk;
+                blk->prev = tail;
+                tail = blk;
+            }
         }
         if (count % 2  == 0)
             idx++;
@@ -42,44 +81,18 @@ static void parse_line2(char *line)
     MemoryBlock *end = tail;
     MemoryBlock *start = head;
     int dec_id = end->idx;
+    int inc_id = 0;
     while (end != NULL && dec_id > 0)
     {
-        MemoryBlock *prev = NULL;
-        if (end->idx != dec_id)
-        {
-            end = end->prev;
-            continue;
-        }
-        while (head->idx > -1 || head->len < end->len)
-        {
-            prev = head;
+        dec_id = search(head, end, dec_id);
+        while (head->next->idx != -1) {
+            if (head->idx == inc_id)
+                inc_id++;
             head = head->next;
-            if (head == NULL || head == end) 
-            {
-                goto nogood;
-            }
         }
-        if (head->len == end->len)
-        {
-            head->idx = end->idx;
-            end->idx = -1;
-        }
-        else
-        {
-            MemoryBlock *new_blk = malloc(sizeof(MemoryBlock));
-            new_blk->idx = end->idx;
-            new_blk->len = end->len;
-            if (prev != NULL)
-                prev->next = new_blk;
-            new_blk->prev = prev;
-            new_blk->next = head;
-            head->len = head->len - end->len;
-            end->idx = -1;
-        }
-    nogood:
-        dec_id--;
         end = end->prev;
-        head = start;
+        if (dec_id <= inc_id)
+            break;
     }
     count = 0;
     while (start != NULL)
@@ -88,7 +101,9 @@ static void parse_line2(char *line)
             if (start->idx != -1)
                 part2 += count * start->idx;
         }
-        start = start->next;
+        end = start->next;
+        free(start);
+        start = end;
     }
 }
 
