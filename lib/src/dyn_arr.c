@@ -1,11 +1,11 @@
 /* Support for storing dynamically resizing arrays of pointers to objs */
 #include <string.h>
 
-#include "realloc_arr.h"
+#include "dyn_arr.h"
 
-ReallocArr *realloc_arr_alloc(size_t el_size)
+DynArr *dyn_arr_alloc(size_t el_size)
 {
-    ReallocArr *data = malloc(sizeof(ReallocArr));
+    DynArr *data = malloc(sizeof(DynArr));
     data->length = 0;
     data->capacity = 64;
     data->el_size = el_size;
@@ -13,7 +13,7 @@ ReallocArr *realloc_arr_alloc(size_t el_size)
     return data;
 }
 
-void realloc_arr_add(ReallocArr *data, void *el)
+void dyn_arr_add(DynArr *data, void *el)
 {
     memcpy((void *)((intptr_t)data->elements + data->length++ * data->el_size), el, data->el_size);
     if (data->length == data->capacity)
@@ -23,7 +23,7 @@ void realloc_arr_add(ReallocArr *data, void *el)
     }
 }
 
-void realloc_arr_free(ReallocArr *data) 
+void dyn_arr_free(DynArr *data) 
 {
     free(data->elements);
     free(data);

@@ -4,7 +4,7 @@
         "socket.h": "c",
         "netdb.h": "c",
         "advent.h": "c",
-        "realloc_arr.h": "c",
+        "dyn_arr.h": "c",
         "hashmap.h": "c",
         "string.h": "c",
         "input": "plaintext",

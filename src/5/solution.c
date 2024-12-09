@@ -1,5 +1,5 @@
 #include "advent.h"
-#include "realloc_arr.h"
+#include "dyn_arr.h"
 
 static size_t n_rules;
 static char **lines;
@@ -9,8 +9,8 @@ struct rule {
     long *values;
     size_t n_values;
 };
-static ReallocArr *rules;
-static ReallocArr *this_key;
+static DynArr *rules;
+static DynArr *this_key;
 
 static int phase = 0;
 static int part1 = 0;
@@ -73,19 +73,19 @@ void parse_line(char *line)
                     rule.values = malloc(sizeof(long) * rule.n_values);
                     memcpy(rule.values, this_key->elements, rule.n_values * this_key->el_size);
                     sort_asc(rule.values, rule.n_values);
-                    realloc_arr_add(rules, &rule);
+                    dyn_arr_add(rules, &rule);
                 }
                 rule.key = nums[0];
                 this_key->length = 0;
             }
-            realloc_arr_add(this_key, nums + 1);
+            dyn_arr_add(this_key, nums + 1);
             free(nums);
         }
         rule.n_values = this_key->length;
         rule.values = malloc(sizeof(long) * rule.n_values);
         memcpy(rule.values, this_key->elements, rule.n_values * this_key->el_size);
         sort_asc(rule.values, rule.n_values);
-        realloc_arr_add(rules, &rule);
+        dyn_arr_add(rules, &rule);
     }
     else if (phase == 0)
     {
@@ -125,20 +125,20 @@ int day5()
     n_rules = count_to_blank(0) - 1;
     lines = malloc(sizeof(char *) * n_rules);
 
-    rules = realloc_arr_alloc(sizeof(struct rule));
-    this_key = realloc_arr_alloc(sizeof(long));
+    rules = dyn_arr_alloc(sizeof(struct rule));
+    this_key = dyn_arr_alloc(sizeof(long));
 
     for_each_line(parse_line);
 
     printf("%d\n", part1);
     printf("%d\n", part2);
 
-    realloc_arr_free(this_key);
+    dyn_arr_free(this_key);
     for (size_t i = 0; i < rules->length; i++)
     {
         free(((struct rule *)rules->elements)[i].values);
     }
-    realloc_arr_free(rules);
+    dyn_arr_free(rules);
     free(lines);
 
     return 0;

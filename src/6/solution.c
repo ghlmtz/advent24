@@ -1,6 +1,5 @@
 #include "advent.h"
 #include "hashmap.h"
-#include "realloc_arr.h"
 #include "xy_pos.h"
 
 extern XY_POS xy_dirs[];
