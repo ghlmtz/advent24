@@ -1,8 +1,6 @@
-CFLAGS = -g -I../lib/src -Wall -Wextra -pedantic
-SOURCES := main.c $(wildcard */*.c)
-OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
+all: main.o
+	$(MAKE) -C lib
+	$(MAKE) -C days
 
-all: $(OBJECTS)
-
-$(OBJECTS): %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+main.o: main.c
+	$(CC) $(CFLAGS) -c main.c -o main.o

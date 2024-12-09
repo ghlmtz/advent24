@@ -46,7 +46,7 @@ void fetch_input(void)
     if (access("input", R_OK)) 
     {
         printf("Fetching input:\n");
-        int result = system("../../bin/fetch_input.sh");
+        int result = system("../../../bin/fetch_input.sh");
         printf("Done.\n");
         if (result) 
         {
@@ -59,7 +59,7 @@ void fetch_input(void)
 void run_day(const char *day)
 {
     printf("Running Day %s:\n", day);
-    chdir("src");
+    chdir("src/days");
     chdir(day);
     fetch_input();
     int day_num = atoi(day);
@@ -68,7 +68,7 @@ void run_day(const char *day)
         exit(EX_DATAERR);
     }
     solutions[day_num - 1]();
-    chdir("../..");
+    chdir("../../..");
 }
 
 int main(int argc, char *argv[]) 
@@ -85,10 +85,8 @@ int main(int argc, char *argv[])
     } 
     else if (strcmp("-d", argv[1]) == 0) // Run today's 
     {
-        char day[3];
-        struct tm *ts;
         time_t now = time(NULL);
-        ts = localtime(&now);
+        struct tm *ts = localtime(&now);
         run_day(all_days[ts->tm_mday - 1]);
     }
     else 
