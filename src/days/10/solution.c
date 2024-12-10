@@ -26,6 +26,7 @@ static void search(HashMap *nines, int d, int i, int j)
             hash_add(nines, pos);
         else
             free(pos);
+        rating++;
         return;
     }
     if (i-1 >= 0 && grid[i-1][j] == d)
@@ -52,36 +53,8 @@ static void part1()
             }
     }
     printf("%d\n", score);
-    hash_free(nines);
-}
-
-static void search2(int d, int i, int j)
-{
-    if (d == -1)
-    {
-        rating++;
-        return;
-    }
-    if (i-1 >= 0 && grid[i-1][j] == d)
-        search2(d-1, i-1, j);
-    if (j-1 >= 0 && grid[i][j-1] == d)
-        search2(d-1, i, j-1);
-    if (i+1 < grid_size && grid[i+1][j] == d)
-        search2(d-1, i+1, j);
-    if (j+1 < grid_size && grid[i][j+1] == d)
-        search2(d-1, i, j+1);
-}
-
-static void part2()
-{
-    for(int i = 0; i < grid_size; i++)
-    {
-        for(int j = 0; j < grid_size; j++)
-            if (grid[i][j] == 9) {
-                search2(8, i, j);
-            }
-    }
     printf("%d\n", rating);
+    hash_free(nines);
 }
 
 int day10()
@@ -91,7 +64,6 @@ int day10()
     grid = malloc(sizeof(int *) * grid_size);
     for_each_line(parse_line);
     part1();
-    part2();
     for (int i = 0; i < grid_size; i++)
         free(grid[i]);
     free(grid);
