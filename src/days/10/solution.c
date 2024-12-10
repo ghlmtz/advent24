@@ -22,9 +22,7 @@ static void search(HashMap *nines, int d, int i, int j)
         XY_POS *pos = malloc(sizeof(XY_POS));
         pos->x = i;
         pos->y = j;
-        if (!hash_exists(nines, pos))
-            hash_add(nines, pos);
-        else
+        if (hash_add(nines, pos))
             free(pos);
         rating++;
         return;

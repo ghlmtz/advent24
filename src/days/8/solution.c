@@ -47,9 +47,7 @@ static void solve()
                 XY_POS *store = malloc(sizeof(XY_POS));
                 store->x = antennae[i][a].x;
                 store->y = antennae[i][a].y;
-                if (!hash_exists(seen2, store))
-                    hash_add(seen2, store);
-                else
+                if (hash_add(seen2, store))
                     free(store);
             }
             for (int b = 0; b < n_antennae[i]; b++)
@@ -70,16 +68,12 @@ static void solve()
                         {
                             store = malloc(sizeof(XY_POS));
                             memcpy(store, &scratch, sizeof(XY_POS));
-                            if (!hash_exists(seen1, store))
-                                hash_add(seen1, store);
-                            else
+                            if (hash_add(seen1, store))
                                 free(store);
                         }
                         store = malloc(sizeof(XY_POS));
                         memcpy(store, &scratch, sizeof(XY_POS));
-                        if (!hash_exists(seen2, store))
-                            hash_add(seen2, store);
-                        else
+                        if (hash_add(seen2, store))
                             free(store);
                     }
                     else
