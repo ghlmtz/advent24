@@ -1,74 +1,133 @@
 #include "advent.h"
-#include "dyn_arr.h"
+#include "hashmap.h"
 
 long *nums;
 size_t n_nums;
 
-DynArr *a, *b;
+typedef struct {
+    long key;
+    long value;
+} LongHash;
+
+static int long_hash_eq(void *p, void *q)
+{
+    LongHash *a = (LongHash *)p;
+    LongHash *b = (LongHash *)q;
+    return a->key == b->key;
+}
+
+unsigned long_hash_hash(void *p) 
+{
+    return ((LongHash *)p)->key % HASH_SIZE;
+}
 
 static void parse_line(char *line)
 {
     n_nums = scan_longs(line, &nums);
-    for (size_t i = 0; i < n_nums; i++)
+}
+
+static void hash_save(LongHash *kv, HashMap *hash2, long save)
+{
+    LongHash *try;
+    LongHash *bar = malloc(sizeof(LongHash));
+    bar->key = save;
+    bar->value = kv->value;
+    if ((try = hash_exists(hash2, bar)) != NULL)
     {
-        dyn_arr_add(a, nums + i);
+        free(bar);
+        try->value += kv->value;
+    }
+    else
+    {
+        hash_add(hash2, bar);
     }
 }
 
-static void part1()
+static void replace(LongHash *kv, HashMap *b)
 {
-    b = dyn_arr_alloc(sizeof(long));
-    for (size_t i = 0; i < a->length; i++)
+    long el = kv->key;
+    if (el == 0)
+        hash_save(kv, b, 1);
+    else
     {
-        long save;
-        long el = *((long *)a->elements + i);
-        if (el == 0) {
-            save = 1;
-            dyn_arr_add(b, &save);
+        long mul = 1;
+        long exp = 0;
+        while (mul <= el) {
+            mul *= 10;
+            exp++;
+        }
+        if (exp % 2 == 0)
+        {
+            int inc = 0;
+            mul = 1;
+
+            while (inc < exp / 2)
+            {
+                mul *= 10;
+                inc++;
+            }
+            hash_save(kv, b, el / mul);
+            hash_save(kv, b, el % mul);
         }
         else
-        {
-            long mul = 1;
-            long exp = 0;
-            while (mul <= el) {
-                mul *= 10;
-                exp++;
-            }
-            if (exp % 2 == 0)
-            {
-                int inc = 0;
-                mul = 1;
-
-                while (inc < exp / 2)
-                {
-                    mul *= 10;
-                    inc++;
-                }
-                save = el / mul;
-                dyn_arr_add(b, &save);
-                save = el % mul;
-                dyn_arr_add(b, &save);
-            }
-            else
-            {
-                save = el * 2024;
-                dyn_arr_add(b, &save);
-            }
-        }
+            hash_save(kv, b, el * 2024);
     }
-    dyn_arr_free(a);
-    a = b;
+}
+
+static void print_count(HashMap *hash1)
+{
+    long count = 0;
+    LongHash *kv = hash_iterate(hash1);
+    do
+    {
+        count += kv->value;
+        kv = hash_iterate(NULL);
+    } while (kv != NULL);
+    printf("%ld\n", count);
+}
+
+static void solution()
+{
+    HashMap *hash1 = hash_init(long_hash_hash, long_hash_eq, free);
+    HashMap *hash2 = hash_init(long_hash_hash, long_hash_eq, free);
+    for (size_t i = 0; i < n_nums; i++)
+    {
+        LongHash *xy = malloc(sizeof(LongHash));
+        xy->key = nums[i];
+        xy->value = 1;
+        hash_add(hash1, xy); 
+    }
+    free(nums);
+
+    for (int i = 0; i < 75; i++)
+    {
+        if (i == 25)
+        {
+            print_count(hash1);
+        }
+
+        LongHash *kv = hash_iterate(hash1);
+        do
+        {
+            replace(kv, hash2);
+            kv = hash_iterate(NULL);
+        } while (kv != NULL);
+
+        HashMap *tmp = hash1;
+        hash1 = hash2;
+        hash2 = tmp;
+        hash_flush(hash2);
+    }
+    print_count(hash1);
+
+    hash_free(hash1);
+    hash_free(hash2);
 }
 
 int day11()
 {
-    a = dyn_arr_alloc(sizeof(long));
     READ_INPUT("input");
     for_each_line(parse_line);
-    for (int i = 0; i < 25; i++)
-        part1();
-    printf("%ld\n", a->length);
-    dyn_arr_free(a);
-    free(nums);
+    solution();
     return 0;
 }
