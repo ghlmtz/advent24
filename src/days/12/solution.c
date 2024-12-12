@@ -1,6 +1,16 @@
 #include "advent.h"
 #include "hashmap.h"
 #include "xy_pos.h"
+#include "dyn_arr.h"
+
+extern XY_POS xy_dirs[];
+
+typedef struct
+{
+    int x;
+    int y;
+    int dir;
+} Triplet;
 
 static HashMap *seen;
 static char **lines;
@@ -11,12 +21,27 @@ static void parse_line(char *line)
     add_to_lines(lines, line);
 }
 
-static int flood_fill(HashMap *region, int x, int y, char ch)
+static void flood_fill(HashMap *region, DynArr *edges, int old_x, int old_y, int dir, char ch)
 {
-    if (x < 0 || y < 0 || x >= strlen(lines[0]) || y >= n_lines)
-        return 1;
-    if (lines[y][x] != ch)
-        return 1;
+    int x, y;
+    if (dir == -1)
+    {
+        x = old_x;
+        y = old_y;
+    }
+    else
+    {
+        x = old_x + xy_dirs[dir].x;
+        y = old_y + xy_dirs[dir].y;
+    } 
+
+    if (x < 0 || y < 0 || x >= strlen(lines[0]) || y >= n_lines || lines[y][x] != ch)
+    {
+        Triplet t = {.x = old_x, .y = old_y, .dir = dir};
+        dyn_arr_add(edges, &t);
+        return;
+    }
+
     XY_POS *xy = malloc(sizeof(XY_POS));
     xy->x = x;
     xy->y = y;
@@ -26,22 +51,78 @@ static int flood_fill(HashMap *region, int x, int y, char ch)
         memcpy(seen_xy, xy, sizeof(XY_POS));
         hash_add(seen, seen_xy);
         hash_add(region, xy);
-        return flood_fill(region, x+1, y, ch) +
-            flood_fill(region, x-1, y, ch) +
-            flood_fill(region, x, y+1, ch) +
-            flood_fill(region, x, y-1, ch);
+        flood_fill(region, edges, x, y, 0, ch);
+        flood_fill(region, edges, x, y, 1, ch);
+        flood_fill(region, edges, x, y, 2, ch);
+        flood_fill(region, edges, x, y, 3, ch);
     }
     else
     {
         free(xy);
-        return 0;
     }
+}
+
+static int in_arr(DynArr *edges_arr, Triplet *t)
+{
+    for (size_t i = 0; i < edges_arr->length; i++)
+    {
+        Triplet u = ((Triplet *)edges_arr->elements)[i];
+        if (u.x == t->x && u.y == t->y && u.dir == t->dir)
+        {
+            ((Triplet *)edges_arr->elements)[i].dir = -1;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int part2(DynArr *edges_arr)
+{
+    Triplet *edges = edges_arr->elements;
+    int count = 0;
+    for (size_t i = 0; i < edges_arr->length; i++)
+    {
+        Triplet t = edges[i];
+        if (t.dir == -1)
+            continue;
+        count++;
+        if (t.dir == 0 || t.dir == 2)
+        {
+            int x = t.x;
+            t.x++;
+            while (in_arr(edges_arr, &t))
+            {
+                t.x++;
+            }
+            t.x = x - 1;
+            while (in_arr(edges_arr, &t))
+            {
+                t.x--;
+            }
+        }
+        else
+        {
+            int y = t.y;
+            t.y++;
+            while (in_arr(edges_arr, &t))
+            {
+                t.y++;
+            }
+            t.y = y - 1;
+            while (in_arr(edges_arr, &t))
+            {
+                t.y--;
+            }
+        }
+        t.dir = -1;
+    }
+    return count;
 }
 
 static void part1()
 {
    HashMap *region = hash_init(xy_pos_hash, xy_pos_eq, free);
-   int total = 0;
+   int total = 0, total2 = 0;
    for (int i = 0; i < n_lines; i++)
    {
         for (int j = 0; j < strlen(lines[0]); j++)
@@ -49,13 +130,17 @@ static void part1()
             XY_POS xy = {.x = j, .y = i};
             if (!hash_exists(seen, &xy))
             {
-                int count = flood_fill(region, j, i, lines[i][j]);
-                total += hash_length(region) * count;
+                DynArr *edges = dyn_arr_alloc(sizeof(Triplet));
+                flood_fill(region, edges, j, i, -1, lines[i][j]);
+                total += hash_length(region) * edges->length;
+                total2 += hash_length(region) * part2(edges);
                 hash_flush(region);
+                dyn_arr_free(edges);
             }
         }
    }
   printf("%d\n", total);
+  printf("%d\n", total2);
   hash_free(region);
 }
 
