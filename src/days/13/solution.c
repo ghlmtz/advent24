@@ -8,7 +8,32 @@ struct machine
 } machine;
 
 static long part1 = 0;
+static long part2 = 0;
 
+static void cramers_rule()
+{
+    int ax = machine.ax;
+    int ay = machine.ay;
+    int bx = machine.bx;
+    int by = machine.by;
+    long px = machine.px;
+    long py = machine.py;
+
+    long det = ax*by - ay*bx;
+    long x = px*by - py*bx;
+    long y = ax*py - ay*px;
+    if (x % det == 0 && y % det == 0)
+        part1 += 3 * (x / det) + (y / det);
+
+    px += 10000000000000;
+    py += 10000000000000;
+    x = px*by - py*bx;
+    y = ax*py - ay*px;
+    if (x % det == 0 && y % det == 0)
+        part2 += 3 * (x / det) + (y / det);
+}
+
+/* Original part1 solver, left for posterity */
 static void solve_machine()
 {
     int ax = machine.ax;
@@ -43,7 +68,7 @@ static void parse_line(char *line)
 {
     static int line_num = 0;
     int *nums;
-    int n = scan_ints(line, &nums);
+    scan_ints(line, &nums);
     switch(line_num % 4)
     {
         case 0:
@@ -57,7 +82,8 @@ static void parse_line(char *line)
         case 2:
             machine.px = nums[0];
             machine.py = nums[1];
-            solve_machine();
+            (void)solve_machine;
+            cramers_rule();
             break;
         default:
             line_num = -1;
@@ -71,5 +97,6 @@ int day13()
     READ_INPUT("input");
     for_each_line(parse_line);
     printf("%ld\n", part1);
+    printf("%ld\n", part2);
     return 0;
 }
