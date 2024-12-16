@@ -4,7 +4,6 @@
 
 static char **grid;
 static char **widegrid;
-static int init_px, init_py;
 static int px, py;
 static int px2, py2;
 static int line_num = 0;
@@ -17,22 +16,22 @@ struct xy_pos_ch {
     char ch;
 };
 
-static debug_print()
-{
-    for (int j = 0; j < line_num; j++)
-    {
-        for (int i = 0; i < 2*line_len; i++)
-        {
-            char ch = widegrid[j][i];
-            if (ch == 0)
-                ch = '.';
-            if (i == px2 && j == py2)
-                ch = '@';
-            printf("%c", ch);
-        }
-        printf("\n");
-    }
-}
+// static debug_print()
+// {
+//     for (int j = 0; j < line_num; j++)
+//     {
+//         for (int i = 0; i < 2*line_len; i++)
+//         {
+//             char ch = widegrid[j][i];
+//             if (ch == 0)
+//                 ch = '.';
+//             if (i == px2 && j == py2)
+//                 ch = '@';
+//             printf("%c", ch);
+//         }
+//         printf("\n");
+//     }
+// }
 
 static int move_box(HashMap *locs, int box_x, int box_y, int dy)
 {
@@ -124,8 +123,6 @@ static void part2(int dx, int dy)
         }
         hash_flush(locs);
     }
-    //printf(" %d %d\n", px2, py2);
-    //debug_print();
 }
 
 static void parse_line(char *line)
@@ -172,7 +169,7 @@ static void parse_line(char *line)
     else
     {
         int dx, dy;
-        for (int i = 0; i < strlen(line); i++)
+        for (size_t i = 0; i < strlen(line); i++)
         {
             dx = 0;
             dy = 0;
