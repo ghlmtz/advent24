@@ -1,22 +1,21 @@
 #include "advent.h"
 #include "hashmap.h"
 #include "xy_pos.h"
+#include "grid.h"
 
-static int rating = 0;
-static int grid_size;
-static int **grid;
+static GRID *grid;
 
 static void parse_line(char *line)
 {
     static int y = 0;
-    grid[y] = malloc(sizeof(int) * grid_size);
-    for(int i = 0; i < grid_size; i++)
-        grid[y][i] = line[i] - '0';
+    for(int i = 0; i < grid->cols; i++)
+        set_grid(grid, y, i, line[i] - '0');
     y++;
 }
 
-static void search(HashMap *nines, int d, int i, int j)
+static int search(HashMap *nines, int d, int i, int j)
 {
+    int ct = 0;
     if (d == 10)
     {
         XY_POS *pos = malloc(sizeof(XY_POS));
@@ -24,28 +23,28 @@ static void search(HashMap *nines, int d, int i, int j)
         pos->y = j;
         if (hash_add(nines, pos))
             free(pos);
-        rating++;
-        return;
+        return 1;
     }
-    if (i-1 >= 0 && grid[i-1][j] == d)
-        search(nines, d+1, i-1, j);
-    if (j-1 >= 0 && grid[i][j-1] == d)
-        search(nines, d+1, i, j-1);
-    if (i+1 < grid_size && grid[i+1][j] == d)
-        search(nines, d+1, i+1, j);
-    if (j+1 < grid_size && grid[i][j+1] == d)
-        search(nines, d+1, i, j+1);
+    if (get_grid(grid, i-1, j) == d)
+        ct += search(nines, d+1, i-1, j);
+    if (get_grid(grid, i , j-1) == d)
+        ct += search(nines, d+1, i, j-1);
+    if (get_grid(grid, i+1, j) == d)
+        ct += search(nines, d+1, i+1, j);
+    if (get_grid(grid, i, j+1) == d)
+        ct += search(nines, d+1, i, j+1);
+    return ct;
 }
 
 static void part1()
 {
-    int score = 0;
+    int score = 0, rating = 0;
     HashMap *nines = hash_init(xy_pos_hash, xy_pos_eq, free);
-    for(int i = 0; i < grid_size; i++)
+    for(int i = 0; i < grid->rows; i++)
     {
-        for(int j = 0; j < grid_size; j++)
-            if (grid[i][j] == 0) {
-                search(nines, 1, i, j);
+        for(int j = 0; j < grid->cols; j++)
+            if (get_grid(grid, i, j) == 0) {
+                rating += search(nines, 1, i, j);
                 score += hash_length(nines);
                 hash_flush(nines);
             }
@@ -57,13 +56,10 @@ static void part1()
 
 int day10()
 {
-    READ_INPUT("input");
-    grid_size = count_to_blank(0) - 1;
-    grid = malloc(sizeof(int *) * grid_size);
+    char *buffer = read_input("input");
+    grid = init_grid_buffer(buffer, -1);
     for_each_line(parse_line);
     part1();
-    for (int i = 0; i < grid_size; i++)
-        free(grid[i]);
-    free(grid);
+    free_grid(grid);
     return 0;
 }
