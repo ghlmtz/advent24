@@ -2,6 +2,7 @@
 #include "hashmap.h"
 #include "xy_pos.h"
 #include "dyn_arr.h"
+#include "grid.h"
 
 extern XY_POS xy_dirs[];
 
@@ -13,12 +14,14 @@ typedef struct
 } Triplet;
 
 static HashMap *seen;
-static char **lines;
-static int n_lines;
+static GRID *grid;
 
 static void parse_line(char *line)
 {
-    add_to_lines(lines, line);
+    static int y = 0;
+    for(int i = 0; i < grid->cols; i++)
+        set_grid(grid, y, i, line[i]);
+    y++;
 }
 
 static void flood_fill(HashMap *region, DynArr *edges, int old_x, int old_y, int dir, char ch)
@@ -35,7 +38,7 @@ static void flood_fill(HashMap *region, DynArr *edges, int old_x, int old_y, int
         y = old_y + xy_dirs[dir].y;
     } 
 
-    if (x < 0 || y < 0 || x >= strlen(lines[0]) || y >= n_lines || lines[y][x] != ch)
+    if (get_grid(grid, y, x) != ch)
     {
         Triplet t = {.x = old_x, .y = old_y, .dir = dir};
         dyn_arr_add(edges, &t);
@@ -123,15 +126,15 @@ static void part1()
 {
    HashMap *region = hash_init(xy_pos_hash, xy_pos_eq, free);
    int total = 0, total2 = 0;
-   for (int i = 0; i < n_lines; i++)
+   for (int i = 0; i < grid->rows; i++)
    {
-        for (int j = 0; j < strlen(lines[0]); j++)
+        for (int j = 0; j < grid->cols; j++)
         {
             XY_POS xy = {.x = j, .y = i};
             if (!hash_exists(seen, &xy))
             {
                 DynArr *edges = dyn_arr_alloc(sizeof(Triplet));
-                flood_fill(region, edges, j, i, -1, lines[i][j]);
+                flood_fill(region, edges, j, i, -1, get_grid(grid, i, j));
                 total += hash_length(region) * edges->length;
                 total2 += hash_length(region) * part2(edges);
                 hash_flush(region);
@@ -146,15 +149,12 @@ static void part1()
 
 int day12()
 {
-    READ_INPUT("input");
-    n_lines = count_to_blank(1) - 1;
-    lines = malloc(sizeof(char *) * n_lines);
+    char *buffer = read_input("input");
+    grid = init_grid_buffer(buffer, 0);
     for_each_line(parse_line);
     seen = hash_init(xy_pos_hash, xy_pos_eq, free);
     part1();
     hash_free(seen);
-    for (int i = 0; i < n_lines; i++)
-        free(lines[i]);
-    free(lines);
+    free_grid(grid);
     return 0;
 }
