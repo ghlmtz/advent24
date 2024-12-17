@@ -46,6 +46,6 @@ void print_grid(GRID *grid) {
         for(j = 0; j < grid->cols; j++) {
             printf("%c", get_grid(grid, i, j));
         }
-        puts("\n");
+        printf("\n");
     }
 }

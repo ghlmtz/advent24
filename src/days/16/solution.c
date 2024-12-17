@@ -135,7 +135,6 @@ int run_bfs()
             return ret;
         }
 
-        bfs->search = bfs->search->next;
         if (!occupied(x + xy_dirs[dir].x, y + xy_dirs[dir].y))
             add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t, dir);
 
@@ -146,11 +145,10 @@ int run_bfs()
         dir = modulo(dir + 2, 4);
         if (!occupied(x + xy_dirs[dir].x, y + xy_dirs[dir].y))
             add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t + 1000, dir);
+        bfs->search = bfs->search->next;
 
         if (cur == '.')
             set_grid(grid, y, x, '+');
-        else if (cur == '+')
-            set_grid(grid, y, x, '_');
         else
             set_grid(grid, y, x, '#');
 
@@ -162,7 +160,6 @@ int run_bfs()
 
 int day16()
 {
-    int rows;
     int part1;
     char *buffer = read_input("input");
 
