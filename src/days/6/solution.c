@@ -1,8 +1,10 @@
 #include "advent.h"
+#include "grid.h"
 #include "hashmap.h"
 #include "xy_pos.h"
 
 extern XY_POS xy_dirs[];
+static GRID *grid;
 
 typedef struct {
     int x;
@@ -17,7 +19,6 @@ int xy_pos_dir_eq(void *p, void *q)
     return z->x == w->x && z->y == w->y && z->dir == w->dir;
 }
 
-static HashMap *walls;
 static HashMap *tried;
 static XY_POS start;
 static int max_x = 0;
@@ -29,14 +30,8 @@ static void parse_line(char *line)
     max_x = strlen(line);
     for(size_t x = 0; x < strlen(line); x++) 
     {
-        if (line[x] == '#')
-        {
-            XY_POS *pos = malloc(sizeof(XY_POS));
-            pos->x = x;
-            pos->y = max_y;
-            hash_add(walls, pos);
-        }
-        else if (line[x] == '^')
+        set_grid(grid, max_y, x, line[x]);
+        if (line[x] == '^')
         {
             start.x = x;
             start.y = max_y;
@@ -45,17 +40,13 @@ static void parse_line(char *line)
     max_y++;
 }
 
-static int within_bounds(XY_POS *guard)
-{
-    return guard->x >= 0 && guard->x < max_x && guard->y >= 0 && guard->y < max_y;
-}
-
 static int test_loop(HashMap *hash_dir, XY_POS_DIR *pos, XY_POS_DIR *s)
 {
     XY_POS_DIR guard_dir = {.x=s->x, .y=s->y, .dir=s->dir};
     XY_POS *guard = (XY_POS *)&guard_dir;
+    set_grid_xy(grid, *pos, '#');
 
-    while(within_bounds(guard))
+    while(get_grid_xy(grid, *guard) != '@')
     {
         XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
         w->x = guard_dir.x;
@@ -66,10 +57,10 @@ static int test_loop(HashMap *hash_dir, XY_POS_DIR *pos, XY_POS_DIR *s)
         if ((pos->y == guard->y && (guard_dir.dir == 1 || guard_dir.dir == 3))
          || (pos->x == guard->x && (guard_dir.dir == 0 || guard_dir.dir == 2)))  
         {
-            while (!(xy_pos_eq(pos, guard) || hash_exists(walls, guard)))
+            while (get_grid_xy(grid, *guard) != '#')
             {
                 xy_pos_add(guard, xy_dirs + guard_dir.dir);
-                if (!within_bounds(guard))
+                if (get_grid_xy(grid, *guard) == '@')
                 {
                     return 0;
                 }
@@ -92,11 +83,11 @@ static int test_loop(HashMap *hash_dir, XY_POS_DIR *pos, XY_POS_DIR *s)
             else
             {
                 i = 0;
-                while (!hash_exists(walls, guard))
+                while (get_grid_xy(grid, *guard) != '#')
                 {
                     xy_pos_add(guard, xy_dirs + guard_dir.dir);
                     i++;
-                    if (!within_bounds(guard))
+                    if (get_grid_xy(grid, *guard) == '@')
                     {
                         *path = -1;
                         return 0;
@@ -124,7 +115,7 @@ static void guard_walk(HashMap *hash_map)
     XY_POS *pos = (XY_POS *)&guard;
     XY_POS_DIR prev = {.x=start.x, .y=start.y, .dir=0};
     HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
-    while(guard.x >= 0 && guard.x < max_x && guard.y >= 0 && guard.y < max_y)
+    while(get_grid_xy(grid, guard) != '@') 
     {
         XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
         XY_POS *z = (XY_POS *)w;
@@ -135,7 +126,7 @@ static void guard_walk(HashMap *hash_map)
         hash_add(hash_map, z);
 
         xy_pos_add(pos, xy_dirs + guard.dir);
-        if (hash_exists(walls, &guard))
+        if (get_grid_xy(grid, guard) == '#')
         {
             xy_pos_add(pos, xy_dirs + ((guard.dir + 2) % 4));
             guard.dir = (guard.dir + 1) % 4;
@@ -144,6 +135,7 @@ static void guard_walk(HashMap *hash_map)
         {
             hash_add(tried, z);
             part2 += test_loop(hash_dir, w, &prev);
+            set_grid_xy(grid, *w, '.');
             hash_flush(hash_dir);
         }
         else
@@ -161,8 +153,8 @@ int day6()
 {
     HashMap *hash_map = hash_init(xy_pos_hash, xy_pos_eq, hash_dummy_free);
     tried = hash_init(xy_pos_hash, xy_pos_eq, free);
-    walls = hash_init(xy_pos_hash, xy_pos_eq, free);
-    READ_INPUT("input");
+    char *buffer = read_input("input");
+    grid = init_grid_buffer(buffer, '@');
     for_each_line(parse_line);
 
     paths = malloc(sizeof(int *) * 4);
@@ -175,12 +167,12 @@ int day6()
 
     hash_free(hash_map);
     hash_free(tried);
-    hash_free(walls);
     for (int i = 0; i < 4; i++)
     {
         free(paths[i]);
     }
     free(paths);
+    free_grid(grid);
 
     return 0;
 }
