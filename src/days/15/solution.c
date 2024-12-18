@@ -16,29 +16,12 @@ struct xy_pos_ch {
     char ch;
 };
 
-// static debug_print()
-// {
-//     for (int j = 0; j < line_num; j++)
-//     {
-//         for (int i = 0; i < 2*line_len; i++)
-//         {
-//             char ch = widegrid[j][i];
-//             if (ch == 0)
-//                 ch = '.';
-//             if (i == px2 && j == py2)
-//                 ch = '@';
-//             printf("%c", ch);
-//         }
-//         printf("\n");
-//     }
-// }
-
 static int move_box(HashMap *locs, int box_x, int box_y, int dy)
 {
     char ch = widegrid[box_y][box_x];
     if (ch == '#')
         return 0;
-    if (ch == 0)
+    if (ch == '.')
         return 1;
     struct xy_pos_ch *xy = malloc(sizeof(struct xy_pos_ch));
     xy->x = box_x;
@@ -85,7 +68,7 @@ static void part2(int dx, int dy)
         {
             tmp_x += dx;
         } while (widegrid[py2][tmp_x] == '[' || widegrid[py2][tmp_x] == ']');
-        if (widegrid[py2][tmp_x] == 0)
+        if (widegrid[py2][tmp_x] == '.')
         {
             while (tmp_x != px2)
             {
@@ -97,7 +80,7 @@ static void part2(int dx, int dy)
     }
     else /* Moving vertically requires some recursion */
     {
-        if (widegrid[py2 + dy][px2] == 0)
+        if (widegrid[py2 + dy][px2] == '.')
             py2 += dy;
         else if (move_box(locs, px2, py2 + dy, dy))
         {
@@ -107,7 +90,7 @@ static void part2(int dx, int dy)
             struct xy_pos_ch *xy = hash_iterate(locs);
             do
             {
-                widegrid[xy->y][xy->x] = 0;
+                widegrid[xy->y][xy->x] = '.';
                 xy = hash_iterate(NULL);
             } while (xy != NULL);
             xy = hash_iterate(locs);
@@ -117,8 +100,8 @@ static void part2(int dx, int dy)
                 xy = hash_iterate(NULL);
             } while (xy != NULL);
 
-            widegrid[py2 + dy][moveme] = 0;
-            widegrid[py2+dy][px2] = 0;
+            widegrid[py2 + dy][moveme] = '.';
+            widegrid[py2+dy][px2] = '.';
             py2 += dy;
         }
         hash_flush(locs);
@@ -141,9 +124,17 @@ static void parse_line(char *line)
         widegrid[line_num] = calloc(2 * line_len, sizeof(char));
         for (int i = 0; i < line_len; i++)
         {
-            if (line[i] == '#' || line[i] == 'O')
+            if (line[i] == '#' || line[i] == 'O' || line[i] == '.')
             {
                 grid[line_num][i] = line[i];
+            }
+            if (line[i] == '@')
+            {
+                grid[line_num][i] = '.';
+                px = i;
+                py = line_num;
+                px2 = 2*i;
+                py2 = line_num;
             }
             switch(grid[line_num][i])
             {
@@ -155,13 +146,9 @@ static void parse_line(char *line)
                     widegrid[line_num][2*i] = '[';
                     widegrid[line_num][2*i+1] = ']';
                     break;
-            }
-            if (line[i] == '@')
-            {
-                px = i;
-                py = line_num;
-                px2 = 2*i;
-                py2 = line_num;
+                default:
+                    widegrid[line_num][2*i] = '.';
+                    widegrid[line_num][2*i+1] = '.';                
             }
         }
         line_num++;
@@ -195,12 +182,12 @@ static void parse_line(char *line)
                 tmp_x += dx;
                 tmp_y += dy;
             } while (grid[tmp_y][tmp_x] == 'O');
-            if (grid[tmp_y][tmp_x] == 0)
+            if (grid[tmp_y][tmp_x] == '.')
             {
                 grid[tmp_y][tmp_x] = 'O';
                 px += dx;
                 py += dy;
-                grid[py][px] = 0;
+                grid[py][px] = '.';
             }
             part2(dx, dy);
         }
