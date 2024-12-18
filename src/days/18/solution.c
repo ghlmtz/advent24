@@ -8,26 +8,24 @@
 static GRID *grid;
 static XY_POS start_pos, end_pos;
 extern const XY_POS xy_dirs[];
-static int run_bfs();
-static char part2[10] = {0};
+static XY_POS *walls;
 
-static void solution(char *line)
+static GRID *build_grid(int idx)
 {
-    static int wall_num = 0;
+    GRID *ret = grid_copy(grid);
+    for(int i = 0; i <= idx; i++)
+        set_grid_xy(ret, walls[i], '#');
+    return ret;
+}
+
+static void parse_line(char *line)
+{
+    static int line_num = 0;
     int *nums;
-    if (part2[0] != 0)
-        return;
     scan_ints(line, &nums);
-    set_grid(grid, nums[1], nums[0], '#');
+    walls[line_num].x = nums[0];
+    walls[line_num++].y = nums[1];
     free(nums);
-    GRID *copy = grid_copy(grid);
-    int result = run_bfs(copy);
-    free_grid(copy);
-    if (wall_num == READ_IN)
-        printf("%d\n", result);
-    if (result == -1)
-        strcpy(part2, line);
-    wall_num++;
 }
 
 static int occupied(GRID *grid, int x, int y)
@@ -155,6 +153,24 @@ static int run_bfs(GRID *grid)
     return -1;
 }
 
+static int* seen;
+
+static int search(int l_idx, int h_idx)
+{
+    int mid = (h_idx - l_idx + 1) / 2 + l_idx;
+    GRID *copy = build_grid(mid);
+    if (seen[mid] != 0)
+    {
+        free_grid(copy);
+        return mid;
+    }
+    seen[mid] = run_bfs(copy);
+    free_grid(copy);
+    if (seen[mid] == -1)
+        return search(l_idx, mid);
+    return search(mid, h_idx);
+}
+
 int day18()
 {
     READ_INPUT("input");
@@ -165,11 +181,21 @@ int day18()
             set_grid(grid, i, j, '.');
     start_pos = (XY_POS){.x = 0, .y = 0};
     end_pos = (XY_POS){.x = GRID_SIZE, .y = GRID_SIZE};
+    int lines = count_to_blank(1) - 1;
+    seen = calloc(lines, sizeof(int));
+    walls = malloc(sizeof(XY_POS) * lines);
 
-    for_each_line(solution);
+    for_each_line(parse_line);
 
-    printf("%s\n", part2);
+    GRID *copy = build_grid(1024);
+    printf("%d\n", run_bfs(copy));
+    free_grid(copy);
 
+    int result = search(0, lines - 1);
+    printf("%d,%d\n", walls[result].x, walls[result].y);
+
+    free(walls);
+    free(seen);
     free_grid(grid);
 
     return 0;
