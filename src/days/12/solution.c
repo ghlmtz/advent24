@@ -135,8 +135,8 @@ static void part1()
             {
                 DynArr *edges = dyn_arr_alloc(sizeof(Triplet));
                 flood_fill(region, edges, j, i, -1, get_grid(grid, i, j));
-                total += hash_length(region) * edges->length;
-                total2 += hash_length(region) * part2(edges);
+                total += region->count * edges->length;
+                total2 += region->count * part2(edges);
                 hash_flush(region);
                 dyn_arr_free(edges);
             }

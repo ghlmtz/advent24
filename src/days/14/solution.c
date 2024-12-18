@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "advent.h"
 
 #define GRID_X 101
@@ -69,8 +71,8 @@ static void safety_factors()
         float mean_y = sum_y/n_bots;
         for (int i = 0; i < n_bots; i++)
         {
-            this_var_x += abs(mean_x - bots[i].px);
-            this_var_y += abs(mean_y - bots[i].py);
+            this_var_x += fabs(mean_x - bots[i].px);
+            this_var_y += fabs(mean_y - bots[i].py);
         }
         if (this_var_x < var_x)
         {

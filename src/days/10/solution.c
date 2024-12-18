@@ -45,7 +45,7 @@ static void part1()
         for(int j = 0; j < grid->cols; j++)
             if (get_grid(grid, i, j) == 0) {
                 rating += search(nines, 1, i, j);
-                score += hash_length(nines);
+                score += nines->count;
                 hash_flush(nines);
             }
     }

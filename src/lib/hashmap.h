@@ -18,6 +18,7 @@ typedef struct hash_map
     void (*free_func)(void *);
     struct hash_ptr *storage[HASH_SIZE];
     DynArr *all_ptrs;
+    size_t count;
 } HashMap;
 
 void hash_dummy_free(void *);
@@ -30,6 +31,5 @@ void *hash_del(HashMap *hash_map, void *element);
 void hash_free(HashMap *hash_map);
 void hash_flush(HashMap *hash_map);
 void *hash_iterate(HashMap *hash_map);
-size_t hash_length(HashMap *hash_map);
 
 #endif

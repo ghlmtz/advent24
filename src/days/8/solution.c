@@ -83,8 +83,8 @@ static void solve()
             }
         }
     }
-    printf("%ld\n", hash_length(seen1));
-    printf("%ld\n", hash_length(seen2));
+    printf("%ld\n", seen1->count);
+    printf("%ld\n", seen2->count);
     hash_free(seen1);
     hash_free(seen2);
 }

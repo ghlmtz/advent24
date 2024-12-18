@@ -35,6 +35,8 @@ HashMap *hash_init(unsigned (*hash_func)(void *),
 
     hash_map->all_ptrs = dyn_arr_alloc(sizeof(struct hash_ptr *));
 
+    hash_map->count = 0;
+
     return hash_map;
 }
 
@@ -52,6 +54,8 @@ int hash_add(HashMap *hash_map, void *element)
         hash_map->storage[key] = new_ptr;
         dyn_arr_add(hash_map->all_ptrs, &new_ptr);
 
+        hash_map->count++;
+
         return 0;
     }
 
@@ -67,6 +71,8 @@ void *hash_del(HashMap *hash_map, void *element) {
         struct hash_ptr *cur = hash_map->storage[key];
         struct hash_ptr *prev = NULL;
         void *data;
+
+        hash_map->count--;
 
         while (!hash_map->equal_func(element, cur->data)) {
             prev = cur;
@@ -114,12 +120,13 @@ void hash_flush(HashMap *hash_map) {
     }
     memset(hash_map->all_ptrs->elements, 0, hash_map->all_ptrs->length * hash_map->all_ptrs->el_size);
     hash_map->all_ptrs->length = 0;
+    hash_map->count = 0;
     
     memset(hash_map->storage, 0, HASH_SIZE * sizeof(struct hash_ptr *));
 }
 
 HashMap *hash_iterate_map;
-int hash_iterate_idx;
+size_t hash_iterate_idx;
 struct hash_ptr *hash_iterate_ptr;
 
 void *hash_iterate(HashMap *hash_map) {
@@ -132,34 +139,22 @@ void *hash_iterate(HashMap *hash_map) {
         hash_iterate_ptr = hash_map->storage[0];
     }
 
-    if (hash_iterate_idx == HASH_SIZE)
+    if (hash_iterate_idx == hash_iterate_map->all_ptrs->length)
         return NULL;
 
     while (hash_iterate_ptr == NULL) {
         hash_iterate_idx++;
-        if (hash_iterate_idx == HASH_SIZE)
+        if (hash_iterate_idx == hash_iterate_map->all_ptrs->length)
             return NULL;
-        hash_iterate_ptr = hash_iterate_map->storage[hash_iterate_idx];
+        hash_iterate_ptr = 
+            *(struct hash_ptr **)dyn_arr_get(hash_iterate_map->all_ptrs, hash_iterate_idx);
     }
+
 
     return_ptr = hash_iterate_ptr->data;
-    hash_iterate_ptr = hash_iterate_ptr->next;
+    hash_iterate_idx++;
+    hash_iterate_ptr = 
+        *(struct hash_ptr **)dyn_arr_get(hash_iterate_map->all_ptrs, hash_iterate_idx);
 
     return return_ptr;
-}
-
-/* Returns total number of data members in hash */
-size_t hash_length(HashMap *hash_map)
-{
-    size_t count = 0;
-    for (int i = 0; i < HASH_SIZE; i++)
-    {
-        struct hash_ptr *head = hash_map->storage[i];
-        while (head != NULL)
-        {
-            count++;
-            head = head->next;
-        }
-    }
-    return count;
 }

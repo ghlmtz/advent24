@@ -152,7 +152,7 @@ static void guard_walk(HashMap *hash_map)
         }
         memcpy(&prev, &guard, sizeof(XY_POS_DIR));
     }
-    printf("%ld\n", hash_length(hash_map));
+    printf("%ld\n", hash_map->count);
     printf("%d\n", part2);
     hash_free(hash_dir);
 }
