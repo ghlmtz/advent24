@@ -191,6 +191,7 @@ static void print_gps(GRID *g, char ch)
             if (get_grid(g, j, i) == ch)
                 gps += 100 * j + i;
     printf("%ld\n", gps);
+    free_grid(g);
 }
 
 int day15()
@@ -202,7 +203,6 @@ int day15()
     for_each_line(parse_line);
     print_gps(grid, 'O');
     print_gps(wide, '[');
-    free_grid(grid);
     free_grid(wide);
     hash_free(locs);
     return 0;
