@@ -8,6 +8,7 @@ typedef struct grid
 
 GRID *init_grid(int rows, int cols, int empty);
 GRID *init_grid_buffer(char *buffer, int empty);
+GRID *grid_copy(GRID *old_grid);
 int get_grid(GRID *grid, int row, int col);
 void set_grid(GRID *grid, int row, int col, int value);
 void free_grid(GRID *grid);

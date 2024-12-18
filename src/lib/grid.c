@@ -25,6 +25,17 @@ GRID *init_grid_buffer(char *buffer, int empty)
     return grid;
 }
 
+GRID *grid_copy(GRID *old_grid)
+{
+    GRID *grid = malloc(sizeof(GRID));
+    grid->rows = old_grid->rows;
+    grid->cols = old_grid->cols;
+    grid->data = malloc(sizeof(int) * grid->rows * grid->cols);
+    grid->empty = old_grid->empty;
+    memcpy(grid->data, old_grid->data, sizeof(int) * grid->rows * grid->cols);
+    return grid;
+}
+
 int get_grid(GRID *grid, int row, int col) {
     if (row < 0 || row >= grid->rows || col < 0 || col >= grid->cols)
         return grid->empty;
