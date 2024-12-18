@@ -154,7 +154,7 @@ static void guard_walk(HashMap *hash_map)
     }
     printf("%ld\n", hash_length(hash_map));
     printf("%d\n", part2);
-    free(hash_dir);
+    hash_free(hash_dir);
 }
 
 int day6()

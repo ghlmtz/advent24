@@ -3,6 +3,8 @@
 
 #define HASH_SIZE 4096
 
+#include "dyn_arr.h"
+
 struct hash_ptr
 {
     void *data;
@@ -15,6 +17,7 @@ typedef struct hash_map
     int (*equal_func)(void *, void *);
     void (*free_func)(void *);
     struct hash_ptr *storage[HASH_SIZE];
+    DynArr *all_ptrs;
 } HashMap;
 
 void hash_dummy_free(void *);

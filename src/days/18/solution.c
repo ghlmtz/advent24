@@ -158,17 +158,14 @@ static int* seen;
 static int search(int l_idx, int h_idx)
 {
     int mid = (h_idx - l_idx + 1) / 2 + l_idx;
-    GRID *copy = build_grid(mid);
     if (seen[mid] != 0)
-    {
-        free_grid(copy);
         return mid;
-    }
+
+    GRID *copy = build_grid(mid);
     seen[mid] = run_bfs(copy);
     free_grid(copy);
-    if (seen[mid] == -1)
-        return search(l_idx, mid);
-    return search(mid, h_idx);
+
+    return seen[mid] == -1 ? search(l_idx, mid) : search(mid, h_idx);
 }
 
 int day18()
@@ -187,11 +184,11 @@ int day18()
 
     for_each_line(parse_line);
 
-    GRID *copy = build_grid(1024);
+    GRID *copy = build_grid(READ_IN);
     printf("%d\n", run_bfs(copy));
     free_grid(copy);
 
-    int result = search(0, lines - 1);
+    int result = search(READ_IN, lines - 1);
     printf("%d,%d\n", walls[result].x, walls[result].y);
 
     free(walls);

@@ -75,9 +75,9 @@ static long recurse(Machine *machine, DynArr **lookup, char *s, int index)
         return strtol(s, NULL, 8);
 
     DynArr *arr = lookup[machine->prog[machine->length - index - 1]];
-    for(int i = 0; i < arr->length; i++)
+    for(size_t i = 0; i < arr->length; i++)
     {
-        char *oct_string = arr->elements + i * sizeof(char *);
+        char *oct_string = (char *)dyn_arr_get(arr, i);
         if(strncmp(oct_string, s + index, 3) == 0)
         {
             s[3 + index] = oct_string[3];

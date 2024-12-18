@@ -33,6 +33,8 @@ HashMap *hash_init(unsigned (*hash_func)(void *),
     hash_map->equal_func = equal_func;
     hash_map->free_func = free_func;
 
+    hash_map->all_ptrs = dyn_arr_alloc(sizeof(struct hash_ptr *));
+
     return hash_map;
 }
 
@@ -48,6 +50,7 @@ int hash_add(HashMap *hash_map, void *element)
         new_ptr->next = head;
 
         hash_map->storage[key] = new_ptr;
+        dyn_arr_add(hash_map->all_ptrs, &new_ptr);
 
         return 0;
     }
@@ -83,35 +86,34 @@ void *hash_del(HashMap *hash_map, void *element) {
 }
 
 void hash_free(HashMap *hash_map) {
-    int i;
-    for (i = 0; i < HASH_SIZE; i++) {
-        struct hash_ptr *head = hash_map->storage[i];
-        struct hash_ptr *next;
-
-        while (head != NULL) {
-            next = head->next;
-            hash_map->free_func(head->data);
-            free(head);
-            head = next;
+    size_t i;
+    for (i = 0; i < hash_map->all_ptrs->length; i++)
+    {
+        struct hash_ptr *el = *(struct hash_ptr **)dyn_arr_get(hash_map->all_ptrs, i);
+        if (el != NULL)
+        {
+            hash_map->free_func(el->data);
+            free(el);
         }
     }
+    dyn_arr_free(hash_map->all_ptrs);
     
     free(hash_map);
 }
 
 void hash_flush(HashMap *hash_map) {
-    int i;
-    for (i = 0; i < HASH_SIZE; i++) {
-        struct hash_ptr *head = hash_map->storage[i];
-        struct hash_ptr *next;
-
-        while (head != NULL) {
-            next = head->next;
-            hash_map->free_func(head->data);
-            free(head);
-            head = next;
+    size_t i;
+    for (i = 0; i < hash_map->all_ptrs->length; i++)
+    {
+        struct hash_ptr *el = *(struct hash_ptr **)dyn_arr_get(hash_map->all_ptrs, i);
+        if (el != NULL)
+        {
+            hash_map->free_func(el->data);
+            free(el);
         }
     }
+    memset(hash_map->all_ptrs->elements, 0, hash_map->all_ptrs->length * hash_map->all_ptrs->el_size);
+    hash_map->all_ptrs->length = 0;
     
     memset(hash_map->storage, 0, HASH_SIZE * sizeof(struct hash_ptr *));
 }
