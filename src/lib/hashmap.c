@@ -136,7 +136,7 @@ void *hash_iterate(HashMap *hash_map) {
     {
         hash_iterate_map = hash_map;
         hash_iterate_idx = 0;
-        hash_iterate_ptr = hash_map->storage[0];
+        hash_iterate_ptr = *(struct hash_ptr **)dyn_arr_get(hash_iterate_map->all_ptrs, hash_iterate_idx);
     }
 
     if (hash_iterate_idx == hash_iterate_map->all_ptrs->length)
