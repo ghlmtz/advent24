@@ -111,7 +111,7 @@ void hash_flush(HashMap *hash_map) {
     size_t i;
     for (i = 0; i < hash_map->all_ptrs->length; i++)
     {
-        struct hash_ptr *el = *(struct hash_ptr **)dyn_arr_get(hash_map->all_ptrs, i);
+        struct hash_ptr *el = DYN_ARR_GET(struct hash_ptr *, hash_map->all_ptrs, i);
         if (el != NULL)
         {
             hash_map->free_func(el->data);
@@ -136,7 +136,7 @@ void *hash_iterate(HashMap *hash_map) {
     {
         hash_iterate_map = hash_map;
         hash_iterate_idx = 0;
-        hash_iterate_ptr = *(struct hash_ptr **)dyn_arr_get(hash_iterate_map->all_ptrs, hash_iterate_idx);
+        hash_iterate_ptr = DYN_ARR_GET(struct hash_ptr *, hash_iterate_map->all_ptrs, hash_iterate_idx);
     }
 
     if (hash_iterate_idx == hash_iterate_map->all_ptrs->length)
@@ -147,14 +147,14 @@ void *hash_iterate(HashMap *hash_map) {
         if (hash_iterate_idx == hash_iterate_map->all_ptrs->length)
             return NULL;
         hash_iterate_ptr = 
-            *(struct hash_ptr **)dyn_arr_get(hash_iterate_map->all_ptrs, hash_iterate_idx);
+            DYN_ARR_GET(struct hash_ptr *, hash_iterate_map->all_ptrs, hash_iterate_idx);
     }
 
 
     return_ptr = hash_iterate_ptr->data;
     hash_iterate_idx++;
     hash_iterate_ptr = 
-        *(struct hash_ptr **)dyn_arr_get(hash_iterate_map->all_ptrs, hash_iterate_idx);
+        DYN_ARR_GET(struct hash_ptr *, hash_iterate_map->all_ptrs, hash_iterate_idx);
 
     return return_ptr;
 }

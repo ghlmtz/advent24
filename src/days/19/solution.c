@@ -2,8 +2,7 @@
 #include "dyn_arr.h"
 #include "hashmap.h"
 
-char *towels[500];
-int n_towels = 0;
+DynArr *towels;
 static long part1 = 0;
 static long part2 = 0;
 
@@ -34,9 +33,9 @@ static long try_towels(char *design)
         return subdesign->arrange;
     if (*design == '\0')
         return 1;
-    for (int i = 0; i < n_towels; i++)
+    for (size_t i = 0; i < towels->length; i++)
     {
-        char *towel = towels[i];
+        char *towel = DYN_ARR_GET(char *, towels, i);
         if (towel[0] != design[0])
             continue;
         int cmp = strncmp(towel, design, strlen(towel));
@@ -60,10 +59,10 @@ static void parse_line(char *line)
         char *add_me = strtok(line, ", ");
         while(add_me != NULL)
         {
-            towels[n_towels++] = add_me;
+            dyn_arr_add(towels, &add_me);
             add_me = strtok(NULL, ", ");
         }
-        sort_strings(towels, n_towels);
+        sort_strings(towels->elements, towels->length);
     }
     if (line_num > 1)
     {
@@ -77,10 +76,12 @@ static void parse_line(char *line)
 int day19()
 {
     designs = hash_init(subdesign_hash, _strcmp, free);
+    towels = dyn_arr_alloc(sizeof(char *));
     READ_INPUT("input");
     for_each_line(parse_line);
     printf("%ld\n", part1);
     printf("%ld\n", part2);
     hash_free(designs);
+    dyn_arr_free(towels);
     return 0;
 }

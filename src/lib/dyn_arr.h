@@ -25,4 +25,6 @@ static inline intptr_t dyn_arr_get(DynArr *data, size_t index)
     return (intptr_t)data->elements + index * data->el_size;
 }
 
+#define DYN_ARR_GET(T, data, index) *(T *)dyn_arr_get(data, index)
+
 #endif

@@ -140,11 +140,11 @@ int run_bfs()
 
         dir = modulo(dir + 1, 4);
         if (!occupied(x + xy_dirs[dir].x, y + xy_dirs[dir].y))
-            add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t + 1000, dir);
+            add_to_search(bfs, x, y, t + 999, dir);
         
         dir = modulo(dir + 2, 4);
         if (!occupied(x + xy_dirs[dir].x, y + xy_dirs[dir].y))
-            add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t + 1000, dir);
+            add_to_search(bfs, x, y, t + 999, dir);
         bfs->search = bfs->search->next;
 
         if (cur == '.')
