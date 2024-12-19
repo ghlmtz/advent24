@@ -39,56 +39,8 @@ struct position
 {
     XY_POS xy;
     int time;
-    int dir;
     struct position *next;
 };
-
-typedef struct bfs
-{
-    XY_POS end;
-    struct position *search;
-} BFS;
-
-static void add_to_search(BFS *bfs, int x, int y, int t, int dir)
-{
-    struct position *prev = bfs->search;
-    struct position *this = bfs->search;
-    struct position *pos = malloc(sizeof(struct position));
-
-    pos->xy.x = x;
-    pos->xy.y = y;
-    pos->time = t;
-    pos->dir = dir;
-
-    if (this == NULL)
-    {
-        bfs->search = pos;
-        pos->next = NULL;
-        return;
-    }
-
-    while (this != NULL && this-> time <= pos->time)
-    {
-        if (this->xy.x == pos->xy.x && this->xy.y == pos->xy.y && this->dir == pos->dir)
-        {
-            // Duplicate, bail out
-            free(pos);
-            return;
-        }
-        prev = this;
-        this = this->next;
-    }
-
-    if (this == prev)
-    {
-        bfs->search = pos;
-    }
-    else
-    {
-        prev->next = pos;
-    }
-    pos->next = this;
-}
 
 static void clean_up(struct position *top)
 {
@@ -104,52 +56,54 @@ static void clean_up(struct position *top)
 
 static int run_bfs(GRID *grid)
 {
-    BFS *bfs = malloc(sizeof(BFS));
+    struct position *search = malloc(sizeof(struct position));
+    struct position *tail = search;
+    search->xy.x = start_pos.x;
+    search->xy.y = start_pos.y;
+    search->time = 0;
+    search->next = NULL;
 
-    bfs->search = malloc(sizeof(struct position));
-    bfs->search->xy.x = start_pos.x;
-    bfs->search->xy.y = start_pos.y;
-    bfs->search->time = 0;
-    bfs->search->dir = 1;
-    bfs->search->next = NULL;
-    bfs->end.x = end_pos.x;
-    bfs->end.y = end_pos.y;
-
-    while (bfs->search != NULL)
+    while (search != NULL)
     {
-        struct position *top = bfs->search;
+        struct position *top = search;
         int x = top->xy.x;
         int y = top->xy.y;
         int t = top->time + 1;
-        int dir = top->dir;
         int cur = get_grid_xy(grid, top->xy);
 
-        if (manhattan(&top->xy, &bfs->end) == 0)
+        if (occupied(grid, x, y))
+        {
+            search = search->next;
+            free(top);
+            continue;
+        }
+
+        if (manhattan(&top->xy, &end_pos) == 0)
         {
             int ret = top->time;
             clean_up(top);
-            free(bfs);
             return ret;
         }
 
-        if (!occupied(grid, x + xy_dirs[dir].x, y + xy_dirs[dir].y))
-            add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t, dir);
+        for (int dir = 0; dir < 4; dir++)
+            if (!occupied(grid, x + xy_dirs[dir].x, y + xy_dirs[dir].y))
+            {
+                struct position *pos = malloc(sizeof(struct position));
+                pos->xy.x = x + xy_dirs[dir].x;
+                pos->xy.y = y + xy_dirs[dir].y;
+                pos->time = t;
+                pos->next = NULL;
+                tail->next = pos;
+                tail = pos;
+            }
 
-        dir = modulo(dir + 1, 4);
-        if (!occupied(grid, x + xy_dirs[dir].x, y + xy_dirs[dir].y))
-            add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t, dir);
-        
-        dir = modulo(dir + 2, 4);
-        if (!occupied(grid, x + xy_dirs[dir].x, y + xy_dirs[dir].y))
-            add_to_search(bfs, x + xy_dirs[dir].x, y + xy_dirs[dir].y, t, dir);
-        bfs->search = bfs->search->next;
+        search = search->next;
 
         if (cur == '.')
             set_grid(grid, y, x, '#');
 
         free(top);
     }
-    free(bfs);
     return -1;
 }
 
