@@ -203,7 +203,6 @@ int day15()
     for_each_line(parse_line);
     print_gps(grid, 'O');
     print_gps(wide, '[');
-    free_grid(wide);
     hash_free(locs);
     return 0;
 }
