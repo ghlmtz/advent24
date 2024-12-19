@@ -37,12 +37,13 @@ static long try_towels(char *design)
     for (int i = 0; i < n_towels; i++)
     {
         char *towel = towels[i];
-        if (towel[0] < design[0])
+        if (towel[0] != design[0])
             continue;
-        if (towel[0] > design[0])
-            break;
-        if(strncmp(towel, design, strlen(towel)) == 0)
+        int cmp = strncmp(towel, design, strlen(towel));
+        if (cmp == 0)
             ret += try_towels(design + strlen(towel));
+        else if (cmp > 0)
+            break;
     }
     subdesign = malloc(sizeof(struct subdesign));
     subdesign->design = design;
