@@ -1,4 +1,5 @@
 #include "advent.h"
+#include "dyn_arr.h"
 #include "grid.h"
 #include "xy_pos.h"
 
@@ -6,6 +7,13 @@ static GRID *grid;
 static GRID *distances;
 static XY_POS start_pos, end_pos;
 extern const XY_POS xy_dirs[];
+
+struct distance {
+    XY_POS xy;
+    int dist;
+};
+
+static DynArr *spaces;
 
 static void parse_line(char *line)
 {
@@ -27,6 +35,13 @@ static void parse_line(char *line)
         else {
             set_grid(grid, row_num, i, line[i]);
         }
+
+        if (line[i] != '#')
+        {
+            XY_POS xy = {.x = i, .y = row_num};
+            struct distance dist = {.xy = xy};
+            dyn_arr_add(spaces, &dist);
+        }
     }
 
     row_num++;
@@ -47,18 +62,6 @@ struct position
     int time;
     struct position *next;
 };
-
-static void clean_up(struct position *top)
-{
-    struct position *prev;
-
-    while (top != NULL)
-    {
-        prev = top;
-        top = top->next;
-        free(prev);
-    }
-}
 
 static int run_bfs(GRID *grid)
 {
@@ -115,17 +118,43 @@ static int cheat(int time_saved)
             int x = get_grid(distances, i+1, j);
             int y = get_grid(distances, i-1, j);
             if (x != -1 && y != -1 && abs(y - x) - 2 >= time_saved)
-            {
-             //   printf("SAVE: %d %d\n", x, y);
                 count++;
-            }
+
             x = get_grid(distances, i, j+1);
             y = get_grid(distances, i, j-1);
             if (x != -1 && y != -1 && abs(y - x) - 2 >= time_saved)
-            {
-           //     printf("SAVE: %d %d\n", x, y);
                 count++;
-            }
+        }
+    }
+    return count;
+}
+
+static int cheat2(int time_saved)
+{
+    int count = 0;
+    for (size_t i = 0; i < spaces->length; i++)
+    {
+        struct distance dist = DYN_ARR_GET(struct distance, spaces, i);
+        XY_POS xy = dist.xy;
+        int xy_dist = dist.dist;
+        if (xy_dist < time_saved)
+            continue;
+        for (size_t j = 0; j < spaces->length; j++)
+        {
+            if (i == j)
+                continue;
+            dist = DYN_ARR_GET(struct distance, spaces, j);
+            XY_POS zw = dist.xy;
+            if (zw.y - xy.y > 20)
+                break;
+            int zw_dist = dist.dist;
+            if (zw_dist > xy_dist)
+                continue;
+            int nyc = manhattan(&xy, &zw);
+            if (nyc > 20)
+                continue;
+            if (xy_dist - zw_dist - nyc >= time_saved)
+                count++;
         }
     }
     return count;
@@ -136,14 +165,22 @@ int day20()
     char *buffer = read_input("input");
     grid = init_grid_buffer(buffer, '#');
     distances = init_grid_buffer(buffer, -1);
+    spaces = dyn_arr_alloc(sizeof(struct distance));
     for_each_line(parse_line);
 
     memset(distances->data, -1, sizeof(int) * distances->rows * distances->cols);
 
     run_bfs(grid);
-    //print_grid(distances);
+    for (size_t i = 0; i < spaces->length; i++)
+    {
+        struct distance *dist = (struct distance *)((intptr_t)spaces->elements + i * sizeof(struct distance));
+        dist->dist = get_grid_xy(distances, dist->xy);
+    }
+//    print_grid(distances);
     printf("%d\n", cheat(100));
+    printf("%d\n", cheat2(100));
     free_grid(grid);
     free_grid(distances);
+    dyn_arr_free(spaces);
     return 0;
 }
