@@ -8,6 +8,7 @@
         "hashmap.h": "c",
         "string.h": "c",
         "input": "plaintext",
-        "xy_pos.h": "c"
+        "xy_pos.h": "c",
+        "grid.h": "c"
     }
 }
