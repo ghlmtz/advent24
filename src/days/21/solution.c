@@ -16,6 +16,7 @@ static void d_recurse(const char *line, int idx, char *s, size_t s_idx, int dept
         {
             char *d = calloc(256, sizeof(char));
             d_recurse(s, 4, d, 0, depth + 1);
+            free(d);
         }
         return;
     }
@@ -58,6 +59,7 @@ static void n_recurse(const char *line, int idx, char *s, int s_idx)
         s[s_idx] = '\0';
         char *d = calloc(256, sizeof(char));
         d_recurse(s, 4, d, 0, 0);
+        free(d);
         return;
     }
     int new_idx = *line - '0';
