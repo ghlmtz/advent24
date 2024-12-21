@@ -1,28 +1,24 @@
 #include "advent.h"
 #include "day21.h"
 
-size_t min = 256;
+#define STRING_SIZE 25600
 
-static void d_recurse(const char *line, int idx, char *s, size_t s_idx, int depth)
+static size_t d_recurse(const char *line, int idx, char *s, size_t s_idx, int depth)
 {
     if (*line == '\0')
     {
         s[s_idx] = '\0';
         if (depth == 1)
         {
-            min = strlen(s) < min ? strlen(s) : min; // !!!
+            return strlen(s);
         }
         else
         {
-            char *d = calloc(256, sizeof(char));
-            d_recurse(s, 4, d, 0, depth + 1);
-            free(d);
+            char d[STRING_SIZE] = {0};
+            return d_recurse(s, 4, d, 0, depth + 1);
         }
-        return;
     }
-    if (s_idx > min)
-        return;
-    int new_idx = *line - '0';
+    int new_idx;
     switch(*line)
     {
         case '^':
@@ -42,42 +38,31 @@ static void d_recurse(const char *line, int idx, char *s, size_t s_idx, int dept
             break;
     }
     
-    char *move = d_keypad[idx][new_idx];
+    char *move = d_keypad[idx][new_idx][0];
     strcpy(s + s_idx, move);
-    d_recurse(line + 1, new_idx, s, s_idx + strlen(move), depth);
+    return d_recurse(line + 1, new_idx, s, s_idx + strlen(move), depth);
 }
 
-static void n_recurse(const char *line, int idx, char *s, int s_idx)
+static size_t n_recurse(const char *line, int idx, char *s, int s_idx)
 {
     if (*line == '\0')
     {
         s[s_idx] = '\0';
-        char *d = calloc(256, sizeof(char));
-        d_recurse(s, 4, d, 0, 0);
-        free(d);
-        return;
+        char d[STRING_SIZE] = {0};
+        return d_recurse(s, 4, d, 0, 0);
     }
-    int new_idx = *line - '0';
-    if (*line == 'A')
-        new_idx = 10;
-    for (int i = 0; i < 2; i++)
-    {
-        char *move = n_keypad[idx][new_idx][i];
-        if (move == NULL)
-            continue;
-        strcpy(s + s_idx, move);
-        n_recurse(line + 1, new_idx, s, s_idx + strlen(move));
-    }
+    int new_idx = *line == 'A' ? 10 : *line - '0';
+
+    char *move = n_keypad[idx][new_idx][0];
+    strcpy(s + s_idx, move);
+    return n_recurse(line + 1, new_idx, s, s_idx + strlen(move));
 }
 
 int part1 = 0;
 static void parse_line(char *line)
 {
-    min = 256;
-    char *s = calloc(256, sizeof(char));
-    n_recurse(line, 10, s, 0);
-    part1 += min * atoi(line);
-    free(s);
+    char s[STRING_SIZE] = {0};
+    part1 += n_recurse(line, 10, s, 0) * atoi(line);
 }
 
 int day21()
