@@ -63,11 +63,11 @@ static void n_recurse(const char *line, int idx, char *s, int s_idx)
     int new_idx = *line - '0';
     if (*line == 'A')
         new_idx = 10;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 2; i++)
     {
         char *move = n_keypad[idx][new_idx][i];
         if (move == NULL)
-            break;
+            continue;
         strcpy(s + s_idx, move);
         n_recurse(line + 1, new_idx, s, s_idx + strlen(move));
     }
