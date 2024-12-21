@@ -41,15 +41,10 @@ static void d_recurse(const char *line, int idx, char *s, size_t s_idx, int dept
             new_idx = 4;
             break;
     }
-
-    for (int i = 0; i < 2; i++)
-    {
-        char *move = d_keypad[idx][new_idx][i];
-        if (move == NULL)
-            break;
-        strcpy(s + s_idx, move);
-        d_recurse(line + 1, new_idx, s, s_idx + strlen(move), depth);
-    }
+    
+    char *move = d_keypad[idx][new_idx];
+    strcpy(s + s_idx, move);
+    d_recurse(line + 1, new_idx, s, s_idx + strlen(move), depth);
 }
 
 static void n_recurse(const char *line, int idx, char *s, int s_idx)
@@ -75,13 +70,13 @@ static void n_recurse(const char *line, int idx, char *s, int s_idx)
     }
 }
 
-int total = 0;
+int part1 = 0;
 static void parse_line(char *line)
 {
     min = 256;
     char *s = calloc(256, sizeof(char));
     n_recurse(line, 10, s, 0);
-    total += min * atoi(line);
+    part1 += min * atoi(line);
     free(s);
 }
 
@@ -90,7 +85,7 @@ int day21()
     READ_INPUT("input");
     for_each_line(parse_line);
 
-    printf("%d\n", total);
+    printf("%d\n", part1);
 
     return 0;
 }
