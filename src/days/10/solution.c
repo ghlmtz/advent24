@@ -18,11 +18,8 @@ static int search(HashMap *nines, int d, int i, int j)
     int ct = 0;
     if (d == 10)
     {
-        XY_POS *pos = malloc(sizeof(XY_POS));
-        pos->x = i;
-        pos->y = j;
-        if (hash_add(nines, pos))
-            free(pos);
+        XY_POS pos = {.x = i, .y = j};
+        hash_add(nines, &pos);
         return 1;
     }
     if (get_grid(grid, i-1, j) == d)
@@ -39,7 +36,7 @@ static int search(HashMap *nines, int d, int i, int j)
 static void part1()
 {
     int score = 0, rating = 0;
-    HashMap *nines = hash_init(xy_pos_hash, xy_pos_eq, free);
+    HashMap *nines = hash_init(xy_pos_hash, xy_pos_eq, sizeof(XY_POS));
     for(int i = 0; i < grid->rows; i++)
     {
         for(int j = 0; j < grid->cols; j++)

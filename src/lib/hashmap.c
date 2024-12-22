@@ -3,9 +3,6 @@
 
 #include "hashmap.h"
 
-/* For structs that don't need to be freed */
-void hash_dummy_free(void *p) { (void)p; }
-
 void *hash_exists(HashMap *hash_map, void *element) {
     unsigned key = hash_map->hash_func(element);
 
@@ -23,7 +20,7 @@ void *hash_exists(HashMap *hash_map, void *element) {
 
 HashMap *hash_init(unsigned (*hash_func)(void *),
                    int (*equal_func)(void *, void *),
-                   void (*free_func)(void *))
+                   size_t el_size)
 {
     HashMap *hash_map = malloc(sizeof(HashMap));
 
@@ -31,7 +28,7 @@ HashMap *hash_init(unsigned (*hash_func)(void *),
 
     hash_map->hash_func = hash_func;
     hash_map->equal_func = equal_func;
-    hash_map->free_func = free_func;
+    hash_map->el_size = el_size;
 
     hash_map->all_ptrs = dyn_arr_alloc(sizeof(struct hash_ptr *));
 
@@ -40,15 +37,17 @@ HashMap *hash_init(unsigned (*hash_func)(void *),
     return hash_map;
 }
 
-// Maybe return something if the key's already there
-int hash_add(HashMap *hash_map, void *element)
+/* Returns existing element if already there */
+void *hash_add(HashMap *hash_map, void *element)
 {
-    if (!hash_exists(hash_map, element)) {
+    void *existing;
+    if ((existing = hash_exists(hash_map, element)) == NULL) {
         int key = hash_map->hash_func(element);
         struct hash_ptr *head = hash_map->storage[key];
         struct hash_ptr *new_ptr = malloc(sizeof(struct hash_ptr));
 
-        new_ptr->data = element;
+        new_ptr->data = malloc(hash_map->el_size);
+        memcpy(new_ptr->data, element, hash_map->el_size);
         new_ptr->next = head;
 
         hash_map->storage[key] = new_ptr;
@@ -56,13 +55,13 @@ int hash_add(HashMap *hash_map, void *element)
 
         hash_map->count++;
 
-        return 0;
+        return NULL;
     }
 
-    return 1;
+    return existing;
 }
 
-// Returns element that matches
+/* Returns element that matches -- data must be freed */
 void *hash_del(HashMap *hash_map, void *element) {
     if (!hash_exists(hash_map, element))
         return NULL;
@@ -98,7 +97,7 @@ void hash_free(HashMap *hash_map) {
         struct hash_ptr *el = *(struct hash_ptr **)dyn_arr_get(hash_map->all_ptrs, i);
         if (el != NULL)
         {
-            hash_map->free_func(el->data);
+            free(el->data);
             free(el);
         }
     }
@@ -114,7 +113,7 @@ void hash_flush(HashMap *hash_map) {
         struct hash_ptr *el = DYN_ARR_GET(struct hash_ptr *, hash_map->all_ptrs, i);
         if (el != NULL)
         {
-            hash_map->free_func(el->data);
+            free(el->data);
             free(el);
         }
     }

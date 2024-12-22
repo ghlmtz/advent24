@@ -44,10 +44,8 @@ static long try_towels(char *design)
         else if (cmp > 0)
             break;
     }
-    subdesign = malloc(sizeof(struct subdesign));
-    subdesign->design = design;
-    subdesign->arrange = ret;
-    hash_add(designs, subdesign);
+    test.arrange = ret;
+    hash_add(designs, &test);
     return ret;
 }
 
@@ -75,7 +73,7 @@ static void parse_line(char *line)
 
 int day19()
 {
-    designs = hash_init(subdesign_hash, _strcmp, free);
+    designs = hash_init(subdesign_hash, _strcmp, sizeof(struct subdesign));
     towels = dyn_arr_alloc(sizeof(char *));
     READ_INPUT("input");
     for_each_line(parse_line);

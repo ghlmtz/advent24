@@ -22,27 +22,21 @@ static int move_box(HashMap *locs, int box_x, int box_y, int dy)
         return 0;
     if (ch == '.')
         return 1;
-    struct xy_pos_ch *xy = malloc(sizeof(struct xy_pos_ch));
-    xy->x = box_x;
-    xy->y = box_y;
-    xy->ch = ch;
-    if (hash_add(locs, xy))
-        free(xy);
-    xy = malloc(sizeof(struct xy_pos_ch));
+    struct xy_pos_ch xy = {.x = box_x, .y = box_y, .ch = ch };
+    hash_add(locs, &xy);
     if (ch == '[')
     {
-        xy->x = box_x + 1;
-        xy->y = box_y;
-        xy->ch = ']';
+        xy.x = box_x + 1;
+        xy.y = box_y;
+        xy.ch = ']';
     }
     else
     {
-        xy->x = box_x - 1;
-        xy->y = box_y;
-        xy->ch = '[';
+        xy.x = box_x - 1;
+        xy.y = box_y;
+        xy.ch = '[';
     }
-    if (hash_add(locs, xy))
-        free(xy);
+    hash_add(locs, &xy);
 
     if (ch == '[' && move_box(locs, box_x + 1, box_y + dy, dy))
     {
@@ -199,7 +193,7 @@ int day15()
     char *buffer = read_input("input");
     grid = init_grid(count_to_blank(0) - 1, char_index(buffer, '\n'), '#');
     wide = init_grid(grid->rows, grid->cols * 2, '#');
-    locs = hash_init(xy_pos_hash, xy_pos_eq, free);
+    locs = hash_init(xy_pos_hash, xy_pos_eq, sizeof(struct xy_pos_ch));
     for_each_line(parse_line);
     print_gps(grid, 'O');
     print_gps(wide, '[');

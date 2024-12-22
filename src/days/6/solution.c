@@ -48,11 +48,7 @@ static int test_loop(HashMap *hash_dir, XY_POS_DIR *pos, XY_POS_DIR *s)
 
     while(get_grid_xy(grid, *guard) != '@')
     {
-        XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
-        w->x = guard_dir.x;
-        w->y = guard_dir.y;
-        w->dir = guard_dir.dir;
-        hash_add(hash_dir, w);
+        hash_add(hash_dir, &guard_dir);
 
         if ((pos->y == guard->y && (guard_dir.dir == 1 || guard_dir.dir == 3))
          || (pos->x == guard->x && (guard_dir.dir == 0 || guard_dir.dir == 2)))  
@@ -114,16 +110,10 @@ static void guard_walk(HashMap *hash_map)
     XY_POS_DIR guard = {.x=start.x, .y=start.y, .dir=0};
     XY_POS *pos = (XY_POS *)&guard;
     XY_POS_DIR prev = {.x=start.x, .y=start.y, .dir=0};
-    HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, free);
+    HashMap *hash_dir = hash_init(xy_pos_hash, xy_pos_dir_eq, sizeof(XY_POS_DIR));
     while(get_grid_xy(grid, guard) != '@') 
     {
-        XY_POS_DIR *w = malloc(sizeof(XY_POS_DIR));
-        XY_POS *z = (XY_POS *)w;
-        z->x = guard.x;
-        z->y = guard.y;
-        w->dir = guard.dir;
-
-        hash_add(hash_map, z);
+        hash_add(hash_map, pos);
 
         xy_pos_add(pos, xy_dirs + guard.dir);
         if (get_grid_xy(grid, guard) == '#')
@@ -131,17 +121,13 @@ static void guard_walk(HashMap *hash_map)
             xy_pos_add(pos, xy_dirs + ((guard.dir + 2) % 4));
             guard.dir = (guard.dir + 1) % 4;
         }
-        if (!hash_exists(tried, z))
+        if (hash_add(tried, pos) == NULL)
         {
-            hash_add(tried, z);
-            part2 += test_loop(hash_dir, w, &prev);
-            set_grid_xy(grid, *w, '.');
+            part2 += test_loop(hash_dir, &guard, &prev);
+            set_grid_xy(grid, guard, '.');
             hash_flush(hash_dir);
         }
-        else
-        {
-            free(w);
-        }
+
         memcpy(&prev, &guard, sizeof(XY_POS_DIR));
     }
     printf("%ld\n", hash_map->count);
@@ -151,8 +137,8 @@ static void guard_walk(HashMap *hash_map)
 
 int day6()
 {
-    HashMap *hash_map = hash_init(xy_pos_hash, xy_pos_eq, hash_dummy_free);
-    tried = hash_init(xy_pos_hash, xy_pos_eq, free);
+    HashMap *hash_map = hash_init(xy_pos_hash, xy_pos_eq, sizeof(XY_POS));
+    tried = hash_init(xy_pos_hash, xy_pos_eq, sizeof(XY_POS));
     char *buffer = read_input("input");
     grid = init_grid_buffer(buffer, '@');
     for_each_line(parse_line);

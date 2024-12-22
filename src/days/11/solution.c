@@ -29,17 +29,10 @@ static void parse_line(char *line)
 static void hash_save(LongHash *kv, HashMap *hash2, long save)
 {
     LongHash *try;
-    LongHash *bar = malloc(sizeof(LongHash));
-    bar->key = save;
-    bar->value = kv->value;
-    if ((try = hash_exists(hash2, bar)) != NULL)
+    LongHash bar = {.key = save, .value = kv->value};
+    if ((try = hash_add(hash2, &bar)) != NULL)
     {
-        free(bar);
         try->value += kv->value;
-    }
-    else
-    {
-        hash_add(hash2, bar);
     }
 }
 
@@ -88,14 +81,12 @@ static void print_count(HashMap *hash1)
 
 static void solution()
 {
-    HashMap *hash1 = hash_init(long_hash_hash, long_hash_eq, free);
-    HashMap *hash2 = hash_init(long_hash_hash, long_hash_eq, free);
+    HashMap *hash1 = hash_init(long_hash_hash, long_hash_eq, sizeof(LongHash));
+    HashMap *hash2 = hash_init(long_hash_hash, long_hash_eq, sizeof(LongHash));
     for (size_t i = 0; i < n_nums; i++)
     {
-        LongHash *xy = malloc(sizeof(LongHash));
-        xy->key = nums[i];
-        xy->value = 1;
-        hash_add(hash1, xy); 
+        LongHash xy = {.key = nums[i], .value = 1};
+        hash_add(hash1, &xy); 
     }
     free(nums);
 

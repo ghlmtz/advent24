@@ -45,23 +45,14 @@ static void flood_fill(HashMap *region, DynArr *edges, int old_x, int old_y, int
         return;
     }
 
-    XY_POS *xy = malloc(sizeof(XY_POS));
-    xy->x = x;
-    xy->y = y;
-    if (!hash_exists(region, xy))
+    XY_POS xy = {.x = x, .y = y};
+    if (!hash_add(region, &xy))
     {
-        XY_POS *seen_xy = malloc(sizeof(XY_POS));
-        memcpy(seen_xy, xy, sizeof(XY_POS));
-        hash_add(seen, seen_xy);
-        hash_add(region, xy);
+        hash_add(seen, &xy);
         flood_fill(region, edges, x, y, 0, ch);
         flood_fill(region, edges, x, y, 1, ch);
         flood_fill(region, edges, x, y, 2, ch);
         flood_fill(region, edges, x, y, 3, ch);
-    }
-    else
-    {
-        free(xy);
     }
 }
 
@@ -124,7 +115,7 @@ static int part2(DynArr *edges_arr)
 
 static void part1()
 {
-   HashMap *region = hash_init(xy_pos_hash, xy_pos_eq, free);
+   HashMap *region = hash_init(xy_pos_hash, xy_pos_eq, sizeof(XY_POS));
    int total = 0, total2 = 0;
    for (int i = 0; i < grid->rows; i++)
    {
@@ -152,7 +143,7 @@ int day12()
     char *buffer = read_input("input");
     grid = init_grid_buffer(buffer, 0);
     for_each_line(parse_line);
-    seen = hash_init(xy_pos_hash, xy_pos_eq, free);
+    seen = hash_init(xy_pos_hash, xy_pos_eq, sizeof(XY_POS));
     part1();
     hash_free(seen);
     free_grid(grid);
