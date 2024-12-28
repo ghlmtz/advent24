@@ -20,22 +20,24 @@ static void parse_line(char *line)
         link[node2][node1] = 1;
 }
 
-int found_long = 0;
+int longest = 0;
+char print_me[100] = {0};
 
 void bron_kerbosch(int *r, int *p, int *x, int n_r)
 {
     int empty = 1;
+    int idx;
     for (int i = 0; i < ALPHA; i++)
     {
-        if (p[i] != 0 || x[i] != 0) {
+        if (p[i] || x[i]) {
             empty = 0;
+            idx = i;
             break;
         }
     }
     if (empty) {
-        if (n_r > 12)
+        if (n_r > longest)
         {
-            char print_me[100] = {0};
             int ch = 0;
             for (int i = 0; i < ALPHA; i++)
             {
@@ -44,14 +46,15 @@ void bron_kerbosch(int *r, int *p, int *x, int n_r)
                 }
             }
             print_me[ch * 3 - 1] = '\0';
-            printf("%s\n", print_me);
-            found_long = 1;
+            longest = n_r;
         }
         return;
     }
     for (int i = 0; i < ALPHA; i++)
     {
         if (!p[i])
+            continue;
+        if (adj[idx][i])
             continue;
         r[i] = 1;
         int *new_p = calloc(ALPHA, sizeof(int));
@@ -71,8 +74,6 @@ void bron_kerbosch(int *r, int *p, int *x, int n_r)
         r[i] = 0;
         p[i] = 0;
         x[i] = 1;
-        if (found_long)
-            return;
     }
 }
 
@@ -114,5 +115,6 @@ int day23()
     bron_kerbosch(r, present, x, 0);
     free(r);
     free(x);
+    printf("%s\n", print_me);
     return 0;
 }
